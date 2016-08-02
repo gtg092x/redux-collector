@@ -1,0 +1,8 @@
+node_modules
+bower_components
+/lib/
+/examples/lib/lib/
+coverage/
+.nyc_output/
+.idea
+npm-debug.log
