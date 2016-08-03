@@ -1,7 +1,9 @@
 import _ from 'lodash';
 
 function defaultMatcher(arg, predicate) {
-  if (_.isFunction(predicate)) {
+  if (predicate === undefined) {
+    return true;
+  } else if (_.isFunction(predicate)) {
     return predicate(arg);
   } else if(_.isBoolean(predicate)) {
     return predicate;

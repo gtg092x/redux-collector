@@ -1,6 +1,6 @@
-import pipeline from '../src/pipeline';
-import _ from 'lodash';
+import collectify from '../src/redux-collector';
 import chai from 'chai';
+import _ from 'lodash';
 
 const {assert} = chai;
 
@@ -8,271 +8,220 @@ function mapObject(obj, map) {
   return Object.keys(obj).reduce((pointer, key) => ({...pointer, [key]: map(obj[key])}), {});
 }
 
+function randomInt(...args) {
+  const [ceil = 1000000, floor = 0] = args.slice(0).reverse();
+  return Math.floor(Math.random() * (ceil - floor)) + floor;
+}
+
 export default function () {
 
+  const checkIntegrity = (reducer, action) => {
+     it ('should be a function', function() {
+       assert.isFunction(reducer);
+     });
 
-  describe('flat', function () {
-
-    const pipelineResult = pipeline(
-      (state = 0) => {
-        return state;
-      },
-      (state = 0, action) => {
-        switch (action.type) {
-          case "ADD":
-            return state + action.data;
-          default:
-            return state;
-        }
-      },
-      {"SUBTRACT": (state = 0, action) => state - action.data}
-    );
-
-    it('should be a function', function () {
-      assert.isFunction(pipelineResult);
+    it ('should not alter state', function() {
+      const incoming = [{foo: 'bar'}];
+      const compareIncoming = _.cloneDeep(incoming);
+      reducer(incoming, action);
+      assert.deepEqual(incoming, compareIncoming);
     });
-    it('should act as identity if no type or action passed', function () {
-      const state = 10;
-      assert.equal(state, pipelineResult(state, {}));
-      assert.equal(state, pipelineResult(state, {data: 4}));
+  };
+  
+  describe('add', function () {
+    const addAction = 'ADD_TEST';
+    const myReducer = collectify({
+      defaultsTo: [],
+      "RANDOMIZE": () => randomInt()
+    }, {
+      add: addAction
     });
-    it('should support multiple dispatch types', function () {
-      const state = 10;
 
-      const toAdd = 4;
-      assert.equal(state + toAdd, pipelineResult(state, {type: 'ADD', data: toAdd}));
+    checkIntegrity(myReducer, {type: addAction, add: 0});
+    it ("Should support Add", function () {
 
-      const toSubtract = 4;
-      assert.equal(state - toSubtract, pipelineResult(state, {type: 'SUBTRACT', data: toSubtract}));
+      let newArr = myReducer(undefined, {type: addAction, add: 0});
+      assert.deepEqual([0], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: 3});
+      assert.deepEqual([1, 2, 3], newArr);
+
+      newArr = myReducer([{}, {}, {}], {type: addAction, add: {foo: 'bar'}});
+      assert.deepEqual([{}, {}, {}, {foo: 'bar'}], newArr);
+    });
+
+    it ("Should support Index", function () {
+
+      let newArr = myReducer([1, 2], {type: addAction, add: 3, index: 0});
+      assert.deepEqual([3, 1, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: 3, index: -1});
+      assert.deepEqual([1, 3, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: 3, index: -2});
+      assert.deepEqual([3, 1, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: 3, index: -3});
+      assert.deepEqual([3, 1, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: 3, index: 10});
+      assert.deepEqual([1, 2, 3], newArr);
+
     });
 
   });
 
-  describe('selects', function () {
+  describe('sort', function () {
+    
+  });
 
-    const addReducer = (state = 0, action) => {
-      switch (action.type) {
-        case "ADD":
-          return state + action.data;
-        default:
-          return state;
-      }
-    };
-
-    const subtractReducer = (state = 0, action) => {
-      switch (action.type) {
-        case "SUBTRACT":
-          return state - action.data;
-        default:
-          return state;
-      }
-    };
-
-    const pipelineResult = pipeline(
-      (state = {}) => {
-        return state;
-      },
-      [
-        'mixedKey',
-        addReducer
-      ],
-      {
-        select: 'addKey2',
-        reducer: addReducer
-      },
-      [
-        (state) => state.addKey3,
-        (result, state) => {
-          return ({...state, addKey3: result});
-        },
-        addReducer
-      ],
-      [
-        'mixedKey',
-        subtractReducer
-      ]
-    );
-
-    it('should be a function', function () {
-      assert.isFunction(pipelineResult);
+  describe('addRange', function () {
+    const addAction = 'ADD_RANGE_TEST';
+    const myReducer = collectify({
+      defaultsTo: [],
+      "RANDOMIZE": () => randomInt()
+    }, {
+      addRange: addAction
     });
 
-    it('should apply reducers to all configured keys', function () {
+    checkIntegrity(myReducer, {type: addAction, add: 0});
+    it ("Should support Add Range", function () {
 
-      const state = {
-        'mixedKey': 10, 'addKey2': 2, 'addKey3': 8
-      };
+      let newArr = myReducer(undefined, {type: addAction, add: [0]});
+      assert.deepEqual([0], newArr);
 
-      const toAdd = 4;
-      assert.deepEqual(mapObject(state, val => val + toAdd), pipelineResult(state, {type: 'ADD', data: toAdd}));
+      newArr = myReducer([1, 2], {type: addAction, add: [3, 4]});
+      assert.deepEqual([1, 2, 3, 4], newArr);
+
+      newArr = myReducer([{}, {}, {}], {type: addAction, add: [{foo: 'bar'}, {foo: 'buzz'}]});
+      assert.deepEqual([{}, {}, {}, {foo: 'bar'}, {foo: 'buzz'}], newArr);
+    });
+
+    it ("Should support Index", function () {
+
+      let newArr = myReducer([1, 2], {type: addAction, add: [3, 4], index: 0});
+      assert.deepEqual([3, 4, 1, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: [3, 4], index: -1});
+      assert.deepEqual([1, 3, 4, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: [3, 4], index: -2});
+      assert.deepEqual([3, 4, 1, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: [3, 4], index: -3});
+      assert.deepEqual([3, 4, 1, 2], newArr);
+
+      newArr = myReducer([1, 2], {type: addAction, add: [3, 4], index: 10});
+      assert.deepEqual([1, 2, 3, 4], newArr);
 
     });
 
-    it('should not apply reducers non configured keys', function () {
+  });
 
-      const state = {
-        'mixedKey': 10, 'addKey2': 2, 'addKey3': 8
-      };
+  describe('remove', function () {
+    const removeAction = 'REMOVE_TEST';
+    const myReducer = collectify({
+      defaultsTo: [],
+      "RANDOMIZE": () => randomInt()
+    }, {
+      remove: removeAction
+    });
 
-      const toSubtract = 4;
-      const result = pipelineResult(state, {type: 'SUBTRACT', data: toSubtract});
-      assert.notDeepEqual(mapObject(state, val => val - toSubtract), result);
-      assert.equal(state.mixedKey - toSubtract, result.mixedKey);
+    checkIntegrity(myReducer, {type: removeAction, index: 0});
+    it ("Should support Index", function () {
+
+      let newArr = myReducer([10], {type: removeAction, index: 0});
+      assert.deepEqual([], newArr);
+
+      newArr = myReducer([1, 2, 3], {type: removeAction, index: -1});
+      assert.deepEqual([1, 2], newArr);
 
     });
 
-    it('should be stateless', function () {
-      const state = {
-        'mixedKey': 10, 'addKey2': 2, 'addKey3': 8
-      };
+    it("Should support query", function() {
 
-      const stateCopy = _.cloneDeep(state);
+      let newArr = myReducer([10, 4], {type: removeAction, query: 4});
+      assert.deepEqual([10], newArr);
 
-      const toAdd = 4;
-      const action = {type: 'ADD', data: toAdd};
-      pipelineResult(state, action);
-      assert.deepEqual(state, stateCopy);
+      newArr = myReducer([10, 4], {type: removeAction, query: num => num < 5});
+      assert.deepEqual([10], newArr);
+
+      newArr = myReducer([{foo: 'bar'}, {foo: 'baz'}], {type: removeAction, query: {foo: 'baz'}});
+      assert.deepEqual([{foo: 'bar'}], newArr);
+
+      newArr = myReducer([{foo: 'bar'}, {foo: 'baz'}], {type: removeAction, query: true});
+      assert.deepEqual([], newArr);
+
+    });
+
+    it ("Should support limit and skip", function () {
+
+      const state = [1, 2, 3, 4, 5];
+      let newArr = myReducer(state, {type: removeAction, limit: 3, skip: 1});
+      assert.deepEqual([1, 5], newArr);
+
+      newArr = myReducer(state, {type: removeAction, query: num => num < 4, limit: 2});
+      assert.deepEqual([3, 4, 5], newArr);
+
     });
   });
 
-  describe('nulls and undefined', function () {
+  describe('move', function () {
 
-    const pipelineResult = pipeline(
-      (state = 0) => {
-        return state;
-      },
-      (state = 0, action) => {
-        switch (action.type) {
-          case "NULL":
-            return null;
-          default:
-            return state;
-        }
-      },
-      (state = 0, action) => {
-        switch (action.type) {
-          case "UNDEFINED":
-            return undefined;
-          default:
-            return state;
-        }
-      }
-    );
+  });
 
-    it('should support undefined', function () {
-      assert.isUndefined(pipelineResult(0, {type: 'UNDEFINED'}))
+  describe('swap', function () {
+
+  });
+
+  describe('update', function () {
+    const updateAction = 'UPDATE_TEST';
+    const myReducer = collectify({
+      defaultsTo: [],
+      "RANDOMIZE": () => randomInt()
+    }, {
+      update: updateAction
     });
 
-    it('should support null', function () {
-      assert.isNull(pipelineResult(0, {type: 'NULL'}))
+    const action = {type: 'RANDOMIZE'};
+
+    checkIntegrity(myReducer, {type: updateAction, action});
+
+    it ("Should run reducer", function () {
+      let newArr = myReducer([-1], {type: updateAction, action});
+      assert.notEqual(-1, newArr[0]);
+      assert.equal(1, newArr.length);
+    });
+
+    it ("Should support Index", function () {
+
+      let newArr = myReducer([-1, -1], {type: updateAction, action, index: 0});
+      assert.notEqual(-1, newArr[0]);
+      assert.equal(-1, newArr[1]);
+      assert.equal(2, newArr.length);
+
+    });
+
+    it("Should support query", function() {
+
+      let newArr = myReducer([-3, -1, -3], {type: updateAction, action, query: -3});
+      assert.notEqual(-3, newArr[0]);
+      assert.notEqual(-3, newArr[2]);
+      assert.equal(-1, newArr[1]);
+      assert.equal(3, newArr.length);
+
+    });
+
+    it ("Should support limit and skip", function () {
+      let newArr = myReducer([-3, -1, -3], {type: updateAction, action, query: -3, limit: 1});
+      assert.notEqual(-3, newArr[0]);
+      assert.equal(-3, newArr[2]);
+      assert.equal(-1, newArr[1]);
+      assert.equal(3, newArr.length);
+
+      newArr = myReducer([-3, -1, -3], {type: updateAction, action, query: -3, limit: 1, skip: 1});
+      assert.equal(-3, newArr[0]);
     });
   });
 
-  describe('nested', function () {
-
-    const addReducer = (state = 0, action) => {
-      switch (action.type) {
-        case "ADD":
-          return state + action.data;
-        default:
-          return state;
-      }
-    };
-
-    const pipelineResult = pipeline(
-      (state = {}) => {
-        return state;
-      },
-      [
-        'addKey1',
-        addReducer
-
-      ],
-      [
-        'addKey2',
-        pipeline(
-          {},
-          [
-            'data',
-            addReducer
-          ]
-        )
-      ]
-    );
-
-    const state = {addKey1: 0, addKey2: {data: 0}};
-
-    it('should be a function', function () {
-      assert.isFunction(pipelineResult);
-    });
-    it('should act as identity if no type or action passed - defaults are injected', function () {
-
-
-      assert.deepEqual(state, pipelineResult(state, {}));
-      assert.deepEqual(state, pipelineResult(state, {data: 4}));
-
-      assert.notDeepEqual({}, pipelineResult(state, {data: 4}));
-    });
-    it('should apply reducers to all keys', function () {
-
-      const toAdd = 10;
-      const action = {type: 'ADD', data: toAdd};
-      const result = pipelineResult(state, action);
-      assert.equal(state.addKey1 + toAdd, result.addKey1);
-      assert.equal(state.addKey2.data + toAdd, result.addKey2.data);
-    });
-
-    it('should be stateless', function () {
-      const toAdd = 10;
-      const action = {type: 'ADD', data: toAdd};
-      const stateCopy = _.cloneDeep(state);
-      pipelineResult(state, action);
-
-
-      assert.deepEqual(state, stateCopy);
-    });
-  });
-
-
-  describe('interrupt', function () {
-
-    const pipelineResult = pipeline(
-      (state = 0) => {
-        return state;
-      },
-      (state = 0, action, end) => {
-        switch (action.type) {
-          case "NULL":
-            return end(null);
-          case "UNDEFINED":
-            return end(undefined);
-          case "ADD":
-            return end(state + action.data);
-          default:
-            return state;
-        }
-      },
-      (state = 0, action) => {
-        switch (action.type) {
-          case "ADD":
-          case "UNDEFINED":
-          case "NULL":
-            throw 'Should not reach';
-          default:
-            return state;
-        }
-      }
-    );
-
-    it('should support undefined', function () {
-      assert.isUndefined(pipelineResult(0, {type: 'UNDEFINED'}))
-    });
-    it('should support null', function () {
-      assert.isNull(pipelineResult(0, {type: 'NULL'}))
-    });
-    it('should support commands', function () {
-      const toAdd = 10;
-      assert.equal(toAdd, pipelineResult(0, {type: 'ADD', data: toAdd}))
-    });
-  });
 }

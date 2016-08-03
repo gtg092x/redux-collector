@@ -1,46 +1,47 @@
-import _ from 'lodash';
+import generateCollector from './generateCollector';
+import {clamp} from './lib';
+import reducify from 'reducify';
 
-function defaultMapStateToCollection(state = []) {
-  return state;
-}
+function configureCollectify(options = {}) {
 
-function collectifyFn(baseReducer, reducer, {add, addRange = '@@/$COLLECTOR_ADD_RANGE', remove, update, sort = '@@/$COLLECTOR_SORT'}, mapStateToCollection = defaultMapStateToCollection, mergeCollectionWithState = _.identity) {
-  
-  
-  
-  return function(state, actionArg = {}) {
-    const collection = mapStateToCollection(state) || [];
-    const {$$collector, ...action} = actionArg;
-    let result = collection;
-    switch (action.type) {
-      case add:
-        result = $$collector.add(collection, action);
-        break;
-      case sort:
-        result = $$collector.sort(collection, action);
-        break;
-      case addRange:
-        result = $$collector.addRange(collection, action);
-        break;
-      case remove:
-        result = $$collector.filter(collection, action);
-        break;
-      case update:
-        result = $$collector.update(collection, action, reducer);
-        break;
-      default:
-        break;
+  return function collectify(reducerArg,
+    {
+      add = '@@/$COLLECTOR_ADD',
+      move = '@@/$COLLECTOR_MOVE',
+      swap = '@@/$COLLECTOR_SWAP',
+      addRange = '@@/$COLLECTOR_ADD_RANGE',
+      remove = '@@/$COLLECTOR_REMOVE',
+      update = '@@/$COLLECTOR_UPDATE',
+      sort = '@@/$COLLECTOR_SORT'
+    }) {
+
+    const reducer = reducify(reducerArg);
+
+    const $$collector = generateCollector(options);
+
+    return function reduxCollector(state = [], action = {}) {
+
+      switch (action.type) {
+        case add:
+          return $$collector.add(state, action);
+        case sort:
+          return $$collector.sort(state, action);
+        case addRange:
+          return $$collector.addRange(state, action);
+        case remove:
+          return $$collector.filter(state, action);
+        case move:
+          return $$collector.move(state, action);
+        case swap:
+          return $$collector.swap(state, action);
+        case update:
+          return $$collector.update(state, action, reducer);
+        default:
+          return state;
+      }
     }
-    return baseReducer(mergeCollectionWithState(result, state), action);
   }
 }
 
-function collectify(...args) {
-  if (_.isFunction(args[1])) {
-    return collectifyFn(...args);
-  } else {
-    return collectifyFn(_.identity, ...args);
-  }
-}
-
-export {collectify};
+export default configureCollectify();
+export {configureCollectify, clamp};

@@ -1,12 +1,12 @@
 import { createStore, combineReducers } from 'redux';
 import _ from 'lodash';
 import chai from 'chai';
-import pipeline from '../src/pipeline';
+import collectify from '../src/redux-collector';
 
 const {assert} = chai;
 
 export default function () {
-
+  return;
   describe('should integreate with redux', function () {
 
     const addReducer = (state = 0, action) => {

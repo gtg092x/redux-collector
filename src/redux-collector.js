@@ -1,6 +1,4 @@
-import {collectify} from './collectify';
-import {collectorMiddleware} from './collector-middleware';
+import collectify, {configureCollectify} from './collectify';
 
 export default collectify;
-
-export {collectorMiddleware, collectify};
+export {configureCollectify, collectify};
