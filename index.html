@@ -81,15 +81,16 @@ dispatch({
 // State is : [2, 3, 4, 5, 6]
 
 dispatch({
-    type: &#39;DECREMENT&#39;
+    type: &#39;DECREMENT&#39;,
+    query: item =&gt; item &gt;= 5
 });
-// State is : [1, 2, 3, 4, 5]
+// State is : [1, 2, 3, 3, 4]
 
 dispatch({
     type: &#39;REMOVE&#39;,
     query: item =&gt; item &lt; 3
 });
-// State is : [3, 4, 5]
+// State is : [3, 3, 4]
 
 dispatch({
     type: &#39;REMOVE&#39;,
@@ -118,7 +119,7 @@ export default createStore(
   )
 );
 </code></pre>
-<p>This is courtesy of <a href="http://reducify.mediadrake.com">Reducify</a>. Head over to their documentation and check out all the ways you can make reducers. Any argument you pass to collectify get automatically passed to reducify.</p>
+<p>This is courtesy of <a href="http://reducify.mediadrake.com">Reducify</a>. Head over to their documentation and check out all the ways you can make reducers. Any argument you pass to collectify gets automatically passed to reducify.</p>
 <h2 id="features">Features</h2>
 <h3 id="operations">Operations</h3>
 <h4 id="order">Order</h4>

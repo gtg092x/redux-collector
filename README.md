@@ -117,7 +117,7 @@ export default createStore(
 );
 ```
 
-This is courtesy of [Reducify][]. Head over to their documentation and check out all the ways you can make reducers. Any argument you pass to collectify get automatically passed to reducify.
+This is courtesy of [Reducify][]. Head over to their documentation and check out all the ways you can make reducers. Any argument you pass to collectify gets automatically passed to reducify.
 
 ## Features
 
