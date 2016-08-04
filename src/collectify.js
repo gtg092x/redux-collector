@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 function checkReducerArg(arg) {
   if (arg.$ || arg.select) {
-    throw '[Redux Pipeline] - The top level of this reducer must be an array. Make this reducer a child of a pipeline reducer with a selector. http://redux-collector.mediadrake.com/#gotchas';
+    throw '[Redux Collector] - The top level of this reducer must be an array. Make this reducer a child of a pipeline reducer with a selector. http://redux-collector.mediadrake.com/#gotchas';
   }
   return true;
 }
