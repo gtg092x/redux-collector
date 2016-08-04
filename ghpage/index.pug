@@ -29,7 +29,7 @@ block analytics
             m.parentNode.insertBefore(a, m)
         })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-        ga('create', 'UA-44186754-3', 'auto');
+        ga('create', 'UA-44186754-5', 'auto');
         ga('send', 'pageview');
 
 block example
@@ -38,13 +38,16 @@ block example
 block masthead
     h1.container
         span.mast-card
-            span.text Collect them
+            span.text Collect your thoughts and your reducers
             pre
                 code.language-js.
-                    reducify({
-                       "ADD": (state, action) => state + action.data,
-                       "SUBTRACT": (state, action) => state - action.data
-                    })
+                    // [5, 4, 3, 2, 1]
+                    dispatch({
+                        type: "INCREMENT",
+                        query: item => item >= 3,
+                        skip: 1
+                    });
+                    // [5, 5, 4, 2, 1]
 block scripts
     script.
         $('a[href="http://reducify.mediadrake.com/"]').remove();

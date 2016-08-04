@@ -10,12 +10,15 @@
     m.parentNode.insertBefore(a, m)
 })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-ga('create', 'UA-44186754-3', 'auto');
+ga('create', 'UA-44186754-5', 'auto');
 ga('send', 'pageview');
-</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducers-made-three-ways">Reducers</a><a class="nav-link" href="#configuration-sugar">Configuration</a><a class="nav-link" href="#credits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Collect them</span><pre><code class="language-js">reducify({
-   "ADD": (state, action) => state + action.data,
-   "SUBTRACT": (state, action) => state - action.data
-})</code></pre></span></h1><div id="example"></div></div><div class="container" id="readme"><h1 id="redux-collector">Redux Collector</h1>
+</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducers-made-three-ways">Reducers</a><a class="nav-link" href="#configuration-sugar">Configuration</a><a class="nav-link" href="#credits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Collect your thoughts and your reducers</span><pre><code class="language-js">// [5, 4, 3, 2, 1]
+dispatch({
+    type: "INCREMENT",
+    query: item => item >= 3,
+    skip: 1
+});
+// [5, 5, 4, 2, 1]</code></pre></span></h1><div id="example"></div></div><div class="container" id="readme"><h1 id="redux-collector">Redux Collector</h1>
 <p>Easy Collection Reducers for <a href="https://github.com/reactjs/redux">Redux</a>.</p>
 <h2 id="installation">Installation</h2>
 <pre><code>% npm install redux-collector
