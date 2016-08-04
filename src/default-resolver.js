@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-function defaultMatcher(arg, predicate) {
+function defaultMatcher(arg, predicate, index) {
   if (predicate === undefined) {
     return true;
   } else if (_.isFunction(predicate)) {

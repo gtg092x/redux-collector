@@ -4,7 +4,7 @@ function generateIndexesOf(matcher) {
   return function generatedIndexesOf (state, query, {skip = 0, limit = state.length} = {}) {
     const indexes = [];
     for (let i = skip; indexes.length < limit && i < state.length; i ++) {
-      if (matcher(state[i], query)) {
+      if (matcher(state[i], query, i)) {
         indexes.push(i);
       }
     }

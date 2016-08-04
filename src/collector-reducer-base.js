@@ -10,6 +10,9 @@ function incrementIndex({index, item}) {
 }
 
 function collectorReducerBase({itemDefault, matcher, addWrapper, getMoveIndexes, reducer, getIndexes, sortBy}) {
+
+
+
   return {
     add(state = [], {skip = state.length, add: addArg, data} = {}) {
 
@@ -76,7 +79,7 @@ function collectorReducerBase({itemDefault, matcher, addWrapper, getMoveIndexes,
 
       const result = [];
       for (let i = 0, updated = 0; i < state.length; i++) {
-        if (i >= skip && updated < limit && matcher(state[i], query)) {
+        if (i >= skip && updated < limit && matcher(state[i], query, i)) {
           result.push(reducer(state[i], rest));
           updated ++;
         } else {
@@ -85,11 +88,23 @@ function collectorReducerBase({itemDefault, matcher, addWrapper, getMoveIndexes,
       }
       return result;
     },
+    hydrate(state = [], {data, skip = 0} = {}) {
+      let setArg = data;
+
+      if (!_.isArray(setArg)) {
+        setArg = [setArg];
+      }
+
+      return [
+        ...state.slice(0, skip),
+        ...setArg.map((item, i) => addWrapper(item, skip + i))
+      ];
+    },
     filter(state = [], {limit, skip = 0, query} = {}) {
 
       const result = [];
       for (let i = 0, removed = 0; i < state.length; i++) {
-        if (i < skip || removed >= limit || (query !== undefined && !matcher(state[i], query))) {
+        if (i < skip || removed >= limit || (query !== undefined && !matcher(state[i], query, i))) {
           result.push(state[i]);
         } else {
           removed ++;

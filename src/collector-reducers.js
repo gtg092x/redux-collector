@@ -15,7 +15,9 @@ function checkState (state) {
   }
 }
 
-function generateCollector({matcher: matcherConfig = defaultMatcher, indexOf: indexOfArg, indexesOf: indexesOfArg, sortBy: sortByArg} = {}, {reducer: itemReducer = _.identity, itemDefault} = {}) {
+function generateCollector({matcher: matcherArg, indexOf: indexOfArg, indexesOf: indexesOfArg, sortBy: sortByArg} = {}, {reducer: itemReducer = _.identity, itemDefault} = {}) {
+
+  const matcherConfig = matcherArg === undefined ? defaultMatcher : _.partialRight(matcherArg, defaultMatcher);
 
   // Matcher Methods
   const matcher = _.wrap(matcherConfig, matcherWrap);

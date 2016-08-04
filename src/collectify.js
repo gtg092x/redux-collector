@@ -16,11 +16,13 @@ function configureCollectify(options = {}) {
 
     const [{
       itemDefault: itemDefaultArg,
+      collectionDefault = [],
       add = '@@/COLLECTOR_ADD',
       move = '@@/COLLECTOR_MOVE',
       swap = '@@/COLLECTOR_SWAP',
       addRange = '@@/COLLECTOR_ADD_RANGE',
       remove = '@@/COLLECTOR_REMOVE',
+      hydrate = '@@/COLLECTOR_HYDRATE',
       sort = '@@/COLLECTOR_SORT'
     } = {}, reducerArg = []] = config.reverse();
 
@@ -32,7 +34,7 @@ function configureCollectify(options = {}) {
 
     const $$collector = createReducers(options, {itemDefault, reducer});
 
-    return function reduxCollector(state = [], action = {}, ...rest) {
+    return function reduxCollector(state = collectionDefault, action = {}, ...rest) {
       switch (action.type) {
         case add:
           return $$collector.add(state, action, ...rest);
@@ -44,6 +46,8 @@ function configureCollectify(options = {}) {
           return $$collector.filter(state, action, ...rest);
         case move:
           return $$collector.move(state, action, ...rest);
+        case hydrate:
+          return $$collector.hydrate(state, action, ...rest);
         case swap:
           return $$collector.swap(state, action, ...rest);
         default:
