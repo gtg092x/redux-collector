@@ -1,7 +1,10 @@
-Redux Collector
-================
+# Redux Collector [![Build Status](https://travis-ci.org/gtg092x/redux-collector.svg?branch=master)](https://travis-ci.org/gtg092x/redux-collector)
 
 Easy Collection Reducers for [Redux][].
+
+[![NPM](https://nodei.co/npm/redux-collector.png?downloads=true&stars=true)](https://nodei.co/npm/redux-collector/)
+
+<http://redux-collector.mediadrake.com/>
 
 ## Installation
 
