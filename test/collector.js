@@ -1,4 +1,5 @@
 import collectify from '../src/redux-collector';
+import {configureCollectify} from '../src/redux-collector';
 import chai from 'chai';
 import _ from 'lodash';
 
@@ -64,6 +65,21 @@ export default function () {
       newArr = myReducer([1, 2], {type: addAction, add: 3, index: 10});
       assert.deepEqual([1, 2, 3], newArr);
 
+    });
+
+  });
+
+  describe('hydrate', function () {
+    const setAction = 'SET_TEST';
+    const myReducer = collectify([], {
+      hydrate: setAction
+    });
+
+    checkIntegrity(myReducer, {type: setAction, data: 0});
+    it ("Should support Set", function () {
+
+      let newArr = myReducer(['a', 3, 4, 5], {type: setAction, data: [1, 2, 3]});
+      assert.deepEqual([1, 2, 3], newArr);
     });
 
   });
@@ -330,6 +346,56 @@ export default function () {
         myReducer([-3, -1, -3], {...action, query: 'foo', limit: 1, skip: null, order: () => null});
       });
     });
+
+    it("Should handle injection", function() {
+
+      const myColReducer = collectify([], {
+        add: "ADD_ITEM"
+      });
+
+      function myInjectedReducer(state = {}, action) {
+        switch(action.type) {
+          case "ADD_ITEM":
+            return {arr: myColReducer(state.arr, action)};
+          default:
+            return state;
+        }
+      }
+
+      const action = {type: "ADD_ITEM", data: 2};
+
+      let newArr = myInjectedReducer({arr:[]}, {...action});
+
+      assert.deepEqual({arr: [2]}, newArr);
+
+    });
+
+    it("Should handle a custom matcher", function() {
+      
+      function matcher(elm, test, index, defaultMatcher) {
+         return test === 'yes';
+      }
+
+      const myColReducer = configureCollectify({matcher})({
+        "INCREMENT": state => state + 1,
+        defaultsTo: 0
+      }, {
+        collectionDefault: [2],
+        add: "ADD_ITEM"
+      });
+
+      
+
+      const action = {type: "INCREMENT"};
+
+      let newArr = myColReducer([2], {...action, query: 'no'});
+      assert.deepEqual([2], newArr);
+
+      newArr = myColReducer([2], {...action, query: 'yes'});
+      assert.deepEqual([3], newArr);
+
+    });
+
   });
 
 }

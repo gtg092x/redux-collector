@@ -12,20 +12,136 @@
 
 ga('create', 'UA-44186754-5', 'auto');
 ga('send', 'pageview');
-</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducers-made-three-ways">Reducers</a><a class="nav-link" href="#configuration-sugar">Configuration</a><a class="nav-link" href="#credits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Collect your thoughts and your reducers</span><pre><code class="language-js">// [5, 4, 3, 2, 1]
+</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducify">Reducify</a><a class="nav-link" href="#features">Features</a><a class="nav-link" href="#customization">Customization</a><a class="nav-link" href="#api">Api</a><a class="nav-link" href="#gotchas">Gotchas</a><a class="nav-link" href="#with-pipeline">With Pipeline</a><a class="nav-link" href="#without-pipeline">Without Pipeline</a><a class="nav-link" href="#cedits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Gotta Reduce em All</span><pre><code class="language-js">// [6, 4, 3, 2, 1]
 dispatch({
     type: "INCREMENT",
-    query: item => item >= 3,
-    skip: 1
+    query: item => item >= 2,
+    skip: 1,
+    limit: 2
 });
-// [5, 5, 4, 2, 1]</code></pre></span></h1><div id="example"></div></div><div class="container" id="readme"><h1 id="redux-collector-build-status-https-travis-ci-org-gtg092x-redux-collector-svg-branch-master-https-travis-ci-org-gtg092x-redux-collector-">Redux Collector <a href="https://travis-ci.org/gtg092x/redux-collector"><img src="https://travis-ci.org/gtg092x/redux-collector.svg?branch=master" alt="Build Status"></a></h1>
+// [6, 5, 4, 2, 1]</code></pre></span></h1><div id="example"></div></div><div class="container" id="readme"><h1 id="redux-collector-build-status-https-travis-ci-org-gtg092x-redux-collector-svg-branch-master-https-travis-ci-org-gtg092x-redux-collector-">Redux Collector <a href="https://travis-ci.org/gtg092x/redux-collector"><img src="https://travis-ci.org/gtg092x/redux-collector.svg?branch=master" alt="Build Status"></a></h1>
 <p>Easy Collection Reducers for <a href="https://github.com/reactjs/redux">Redux</a>.</p>
 <p><a href="https://nodei.co/npm/redux-collector/"><img src="https://nodei.co/npm/redux-collector.png?downloads=true&amp;stars=true" alt="NPM"></a></p>
 <p><a href="http://redux-collector.mediadrake.com/">http://redux-collector.mediadrake.com/</a></p>
 <h2 id="installation">Installation</h2>
 <pre><code>% npm install redux-collector
 </code></pre><h2 id="usage">Usage</h2>
-<h3 id="redux-collector-is-a-reducer-generator-for-collections">Redux Collector is a Reducer Generator for Collections</h3>
+<p>Redux Collector is a Reducer Generator for Collections</p>
+<h4 id="mystore-js">MyStore.js</h4>
+<pre><code class="lang-js">import { createStore } from &#39;redux&#39;;
+import collectify from &#39;redux-collector&#39;;
+
+function counterReducer(state = 0, action) {
+    switch(action.type) {
+        case &#39;INCREMENT&#39;:
+            return state + 1;
+        case &#39;DECRAMENT&#39;:
+            return state - 1;
+        default:
+            return state;
+    }
+}
+
+export default createStore(
+  collectify(
+    counterReducer, 
+    {
+      add: &#39;ADD_ITEM&#39;,
+      hydrate: &#39;HYDRATE_ITEMS&#39;,
+      remove: &#39;REMOVE_ITEM&#39;
+    }
+  )
+);
+</code></pre>
+<p>Then call actions using the types you created with collectify.</p>
+<h4 id="myactions-js">MyActions.js</h4>
+<pre><code class="lang-js">import store from &#39;./MyStore&#39;
+
+const {dispatch, subscribe, getState} = store;
+
+subscribe(val =&gt; console.log(&#39;State is:&#39;, getState()));
+
+dispatch({
+    type: &#39;HYDRATE_ITEMS&#39;,
+    data: [1, 2, 3, 4]
+});
+
+// State is : [1, 2, 3, 4]
+
+dispatch({
+    type: &#39;ADD_ITEM&#39;,
+    data: 5
+});
+
+// State is : [1, 2, 3, 4, 5]
+
+dispatch({
+    type: &#39;INCREMENT&#39;
+});
+// State is : [2, 3, 4, 5, 6]
+
+dispatch({
+    type: &#39;DECREMENT&#39;,
+    query: item =&gt; item &gt;= 5
+});
+// State is : [1, 2, 3, 3, 4]
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    query: item =&gt; item &lt; 3
+});
+// State is : [3, 3, 4]
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    limit: 2,
+    order: -1
+});
+// State is : [3]
+</code></pre>
+<h2 id="with-reducify">With Reducify</h2>
+<p>The above reducers can actually be a whole lot shorter.</p>
+<pre><code class="lang-js">import { createStore } from &#39;redux&#39;;
+import collectify from &#39;redux-collector&#39;;
+
+export default createStore(
+  collectify(
+    {
+      defaultsTo: 0,
+      &quot;INCREMENT&quot;: state =&gt; state + 1,
+      &quot;DECRAMENT&quot;: state =&gt; state - 1
+    },
+    {
+      add: &#39;ADD_ITEM&#39;,
+      hydrate: &#39;HYDRATE_ITEMS&#39;,
+      remove: &#39;REMOVE_ITEM&#39;
+    }
+  )
+);
+</code></pre>
+<p>This is courtesy of <a href="http://reducify.mediadrake.com">Reducify</a>. Head over to their documentation and check out all the ways you can make reducers. Any argument you pass to collectify gets automatically passed to reducify.</p>
+<h2 id="features">Features</h2>
+<h3 id="operations">Operations</h3>
+<h4 id="order">Order</h4>
+<h4 id="after">After</h4>
+<h4 id="sort">Sort</h4>
+<h4 id="limit">Limit</h4>
+<h3 id="moving-and-sorting">Moving and Sorting</h3>
+<h3 id="indexes">Indexes</h3>
+<h2 id="customization">Customization</h2>
+<h3 id="matcher">Matcher</h3>
+<h2 id="api">Api</h2>
+<h3 id="hydrate">Hydrate</h3>
+<h3 id="add">Add</h3>
+<h3 id="add-range">Add Range</h3>
+<h3 id="remove">Remove</h3>
+<h3 id="sort">Sort</h3>
+<h3 id="move">Move</h3>
+<h3 id="swap">Swap</h3>
+<h3 id="reducers">Reducers</h3>
+<h2 id="gotchas">Gotchas</h2>
+<h2 id="with-pipeline">With Pipeline</h2>
+<h2 id="without-pipeline">Without Pipeline</h2>
 <h2 id="credits">Credits</h2>
 <p>Redux Collector is free software under the MIT license. It was created in sunny Santa Monica by <a href="http://www.mediadrake.com">Matthew Drake</a>.</p>
 </div></div><!-- empty--><script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/prism.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/components/prism-javascript.min.js"></script><script>$('a[href="http://reducify.mediadrake.com/"]').remove();</script></body></html>

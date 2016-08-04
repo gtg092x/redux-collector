@@ -6,9 +6,14 @@ block title
 block nav
     a.nav-link(href='#installation') Install
     a.nav-link(href='#usage') Usage
-    a.nav-link(href='#reducers-made-three-ways') Reducers
-    a.nav-link(href='#configuration-sugar') Configuration
-    a.nav-link(href='#credits') Credits
+    a.nav-link(href='#reducify') Reducify
+    a.nav-link(href='#features') Features
+    a.nav-link(href='#customization') Customization
+    a.nav-link(href='#api') Api
+    a.nav-link(href='#gotchas') Gotchas
+    a.nav-link(href='#with-pipeline') With Pipeline
+    a.nav-link(href='#without-pipeline') Without Pipeline
+    a.nav-link(href='#cedits') Credits
 
 block github
     a.nav-link.github(href='https://github.com/gtg092x/reducify',target="_blank")
@@ -38,16 +43,17 @@ block example
 block masthead
     h1.container
         span.mast-card
-            span.text Collect your thoughts and your reducers
+            span.text Gotta Reduce em All
             pre
                 code.language-js.
-                    // [5, 4, 3, 2, 1]
+                    // [6, 4, 3, 2, 1]
                     dispatch({
                         type: "INCREMENT",
-                        query: item => item >= 3,
-                        skip: 1
+                        query: item => item >= 2,
+                        skip: 1,
+                        limit: 2
                     });
-                    // [5, 5, 4, 2, 1]
+                    // [6, 5, 4, 2, 1]
 block scripts
     script.
         $('a[href="http://reducify.mediadrake.com/"]').remove();
