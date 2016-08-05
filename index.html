@@ -12,7 +12,7 @@
 
 ga('create', 'UA-44186754-5', 'auto');
 ga('send', 'pageview');
-</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducify">Reducify</a><a class="nav-link" href="#features">Features</a><a class="nav-link" href="#customization">Customization</a><a class="nav-link" href="#api">Api</a><a class="nav-link" href="#gotchas">Gotchas</a><a class="nav-link" href="#with-pipeline">With Pipeline</a><a class="nav-link" href="#without-pipeline">Without Pipeline</a><a class="nav-link" href="#cedits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Stupid Simple Redux Collections</span><pre><code class="language-js">// [6, 4, 3, 2, 1]
+</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducify">Reducify</a><a class="nav-link" href="#features">Features</a><a class="nav-link" href="#customization">Customization</a><a class="nav-link" href="#gotchas">Gotchas</a><a class="nav-link" href="#integration">Integration</a><a class="nav-link" href="#cedits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Stupid Simple Redux Collections</span><pre><code class="language-js">// [6, 4, 3, 2, 1]
 dispatch({
     type: "INCREMENT",
     query: item => item >= 2,
@@ -121,6 +121,408 @@ export default createStore(
 </code></pre>
 <p>This is courtesy of <a href="http://reducify.mediadrake.com">Reducify</a>. Head over to their documentation and check out all the ways you can make reducers. Any argument you pass to collectify gets automatically passed to reducify.</p>
 <h2 id="features">Features</h2>
+<p>Basically, you&#39;ll get a reducer that does everything you need to arrays. When you call <code>collectify</code> you&#39;ll get a chance to declare action types for any of the following methods.</p>
+<h3 id="collectify">Collectify</h3>
+<pre><code class="lang-js">collectify([[itemReducer&lt;Object|Function&gt;], actionTypes&lt;Object&gt;]);
+</code></pre>
+<p>One primary function, wrap your item reducers with this.</p>
+<p><code>itemReducer</code></p>
+<p>Use reducer that you want applied to items in an array as the first (optional) argument.</p>
+<p><code>actionTypes</code></p>
+<p>Use this to declare the action types you want to use to manipulate your array. This is a sample configuration:</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+    // reducer stuff
+}
+
+const actionTypes = {
+  add = &#39;ADD_MY_ITEM&#39;,
+  move = &#39;MOVE_MY_ITEM&#39;,
+  swap = &#39;SWAP_MY_ITEMS&#39;,
+  addRange = &#39;ADD_MY_ITEMS&#39;,
+  remove = &#39;REMOVE_MY_ITEMS&#39;,
+  hydrate = &#39;HYDRATE_MY_ITEMS&#39;,
+  sort = &#39;SORT_MY_ITEMS&#39;
+};
+
+const myReducer = collectify(itemReducer, actionTypes);
+</code></pre>
+<p>If you pass only one argument, we assume the reducer is a static reducer for an empty array and will treat the one argument as the <code>actionTypes</code> argument. See <a href="http://reducify.mediadrake.com/#statics">Reducify static reducers</a>.</p>
+<h3 id="reducers">Reducers</h3>
+<p>If your Collectify reducer does not receive an action type outlined in your config, any actions you dispatch will be passed to your item reducer for every item in your array.</p>
+<p>For example:</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+    switch(action.type) {
+        case &quot;INCREMENT_BY_TWO&quot;:
+            return state + 2;
+        default:
+            return state;
+    }
+}
+
+
+const myStore = createStore(collectify(itemReducer, {hydrate: &#39;SET_ITEMS&#39;}));
+
+myStore.dispatch({
+    type: &#39;SET_ITEMS&#39;,
+    data: [2, 4, 6]
+});
+
+// state is [2, 4, 6]
+
+myStore.dispatch({
+    type: &#39;INCREMENT_BY_TWO&#39;
+});
+
+// state is [4, 6, 8]
+</code></pre>
+<p>Notice the action &#39;INCREMENT_BY_TWO&#39; was applied to every item in the array.</p>
+<h3 id="config">Config</h3>
+<p>There are two configuration options you can pass in with your action types.</p>
+<h4 id="collectiondefault">collectionDefault</h4>
+<p>This is the default or initial value of the collection.</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(collectify(itemReducer, {collectionDefault: [1, 2]}));
+
+myStore.dispatch({
+    type: &#39;PASS&#39;
+});
+
+// state is [1, 2]
+</code></pre>
+<h4 id="itemdefault">itemDefault</h4>
+<p>The default value for any item added with <code>add</code> or <code>addRange</code></p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(collectify(itemReducer, {itemDefault: 10, add: &#39;ADD_ITEM&#39;}));
+
+myStore.dispatch({
+    type: &#39;ADD_ITEM&#39;
+});
+
+// state is [10]
+</code></pre>
+<h3 id="actions">Actions</h3>
+<p>The actions will manipulate your array in some form or another.</p>
+<h4 id="hydrate">Hydrate</h4>
+<p>This sets the data for your collection. It will override your entire array unless you pass in a <code>skip</code> parameter.</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    itemReducer,
+    {      
+      hydrate: &#39;HYDRATE_ITEMS&#39;     
+    }
+  )
+);
+
+myStore.dispatch({
+    type: &#39;HYDRATE&#39;,
+    data: [1, 2, 3, 4] // data is required
+});
+</code></pre>
+<h4 id="add">Add</h4>
+<p>This will add an item to your collection. It will default to <code>itemDefault</code> if you passed one with your configuration.</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    itemReducer,
+    {      
+      itemDefault: 10,
+      add: &#39;ADD_ITEM&#39;     
+    }
+  )
+);
+
+myStore.dispatch({
+    type: &#39;ADD_ITEM&#39;
+});
+
+// state is [10]
+
+myStore.dispatch({
+    type: &#39;ADD_ITEM&#39;,
+    data: 11
+});
+
+// state is [10, 11]
+</code></pre>
+<p>You can pass any <a href="#indexes">index argument</a> as well.</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    itemReducer,
+    { add: &#39;ADD_ITEM&#39; }
+  )
+);
+
+myStore.dispatch({
+    type: &#39;ADD_ITEM&#39;,
+    index: 0,
+    data: 2
+});
+
+// state is [2]
+
+myStore.dispatch({
+    type: &#39;ADD_ITEM&#39;,
+    index: 0,
+    data: 3
+});
+
+// state is [3, 2]
+</code></pre>
+<h4 id="add-range">Add Range</h4>
+<p>The same as <code>add</code>, except this is for adding multiple items at once.</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    itemReducer,
+    {      
+      itemDefault: 10,
+      addRange: &#39;ADD_MULTIPLE_ITEMS&#39;     
+    }
+  )
+);
+
+myStore.dispatch({
+    type: &#39;ADD_MULTIPLE_ITEMS&#39;
+});
+
+// state is [10]
+
+myStore.dispatch({
+    type: &#39;ADD_MULTIPLE_ITEMS&#39;,
+    data: [11, 12]
+});
+
+// state is [10, 11, 12]
+</code></pre>
+<p>You can pass any <a href="#indexes">index argument</a> as well.</p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    itemReducer,
+    { addRange: &#39;ADD_MULTIPLE_ITEMS&#39; }
+  )
+);
+
+myStore.dispatch({
+    type: &#39;ADD_MULTIPLE_ITEMS&#39;,
+    index: 0,
+    data: [2, 3]
+});
+
+// state is [2, 3]
+
+myStore.dispatch({
+    type: &#39;ADD_MULTIPLE_ITEMS&#39;,
+    index: 0,
+    data: [4, 5]
+});
+
+// state is [4, 5, 2, 3]
+</code></pre>
+<h4 id="remove">Remove</h4>
+<p>This will remove items from your collection. If you do not pass a <a href="#queries">query</a>, it will clear the entire collection.</p>
+<pre><code class="lang-js">const myStore = createStore(
+  collectify(
+    [1, 2, 3, 4], // this is a static reducify reducer - defaulting to this array
+    {
+      hydrate: &#39;HYDRATE_ITEMS&#39;,
+      remove: &#39;REMOVE_ITEMS&#39;
+    }
+  )
+);
+
+myStore.dispatch({
+    type: &#39;REMOVE_ITEMS&#39;
+});
+
+// state is []
+
+myStore.dispatch({
+    type: &#39;HYDRATE_ITEMS&#39;,
+    data: [1, 2, 3, 4]
+});
+
+// state is [1, 2, 3, 4]
+
+myStore.dispatch({
+    type: &#39;REMOVE_ITEMS&#39;,
+    query: item =&gt; item &gt; 2
+});
+
+// state is [1, 2]
+
+myStore.dispatch({
+    type: &#39;REMOVE_ITEMS&#39;,
+    query: item =&gt; item &gt; 2
+});
+
+// state is [1, 2]
+
+myStore.dispatch({
+    type: &#39;REMOVE_ITEMS&#39;,
+    limit: 1
+});
+
+// state is [2]
+</code></pre>
+<p>You can pass any <a href="#indexes">index argument</a> as well.</p>
+<pre><code class="lang-js">myStore.dispatch({
+    type: &#39;HYDRATE_ITEMS&#39;,
+    data: [1, 2, 3, 4]
+});
+
+myStore.dispatch({
+    type: &#39;REMOVE_ITEMS&#39;,
+    index: 0
+});
+
+// state is [2, 3, 4]
+
+myStore.dispatch({
+    type: &#39;REMOVE_ITEMS&#39;,
+    indexes: [0, 2]
+});
+
+// state is [3]
+</code></pre>
+<h4 id="sort">Sort</h4>
+<p>Sort will make an effort to use the lodash method <code>_.orderBy</code>. It will incorporate <a href="#order">order</a> if it exists in your action. Otherwise, it will just do the sorting. </p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    [4, 3, 2, 1],
+    {
+      hydrate: &#39;HYDRATE_ITEMS&#39;,
+      sort: &#39;SORT_ITEMS&#39;
+    }
+  )
+);
+
+
+myStore.dispatch({
+    type: &#39;SORT_ITEMS&#39;
+});
+
+// state is [1, 2, 3, 4]
+
+myStore.dispatch({
+    type: &#39;HYDRATE_ITEMS&#39;,
+    [{num: 2}, {num: 3}, {num: 1}]
+});
+
+myStore.dispatch({
+    type: &#39;SORT_ITEMS&#39;,
+    sort: &#39;num&#39;
+});
+
+// state is [{num: 1}, {num: 2}, {num: 3}]
+
+myStore.dispatch({
+    type: &#39;SORT_ITEMS&#39;,
+    sort: item =&gt; item.num
+});
+
+// Same as above
+
+myStore.dispatch({
+    type: &#39;SORT_ITEMS&#39;,
+    sort: () =&gt; Math.random()
+});
+
+// state is randomized
+
+// we&#39;ll also make an effort to infer order arguments
+
+myStore.dispatch({
+    type: &#39;SORT_ITEMS&#39;,
+    sort: {num: -1}
+});
+
+// state is [{num: 3}, {num: 2}, {num: 1}]
+</code></pre>
+<h4 id="move">Move</h4>
+<p>Move uses a <code>from</code> and a <code>to</code> argument to take an item or set of items and move them to another location in your array. </p>
+<pre><code class="lang-js">function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    [4, 3, 2, 1],
+    {      
+      move: &#39;MOVE_ITEMS&#39;
+    }
+  )
+);
+
+
+myStore.dispatch({
+    type: &#39;MOVE_ITEMS&#39;,
+    from: 0,
+    to: -1
+});
+
+// state is [3, 2, 1, 4]
+
+myStore.dispatch({
+    type: &#39;MOVE_ITEMS&#39;,
+    from: [0, 1],
+    to: -2
+});
+
+// state is [2, 1, 4, 3]
+</code></pre>
+<p>Your <code>to</code> argument should always be a single index. Full on movement mapping is a TODO.</p>
+<h4 id="swap">Swap</h4>
+<p>Swap relies on an <a href="#indexes">index argument</a> to get an array of indexes. The most common use case is two indexes, but sending more than one will result in values rotating like a carousel. </p>
+<p>```js
+function itemReducer(state, action) {
+  // reducer stuff
+}</p>
+<p>const myStore = createStore(
+  collectify(
+    [4, 3, 2, 1],
+    {<br>      swap: &#39;SWAP_ITEMS&#39;
+    }
+  )
+);</p>
+<p>myStore.dispatch({
+    type: &#39;SWAP_ITEMS&#39;,
+    indexes: [0, -1]
+});</p>
+<p>// state is [1, 3, 2, 4]</p>
+<p>myStore.dispatch({
+    type: &#39;SWAP_ITEMS&#39;,
+    range: [0, 2]
+});</p>
+<p>// state is [2, 1, 3, 4]</p>
+<h3 id="queries">Queries</h3>
 <h3 id="operations">Operations</h3>
 <h4 id="order">Order</h4>
 <h4 id="after">After</h4>
@@ -130,18 +532,10 @@ export default createStore(
 <h3 id="indexes">Indexes</h3>
 <h2 id="customization">Customization</h2>
 <h3 id="matcher">Matcher</h3>
-<h2 id="api">Api</h2>
-<h3 id="hydrate">Hydrate</h3>
-<h3 id="add">Add</h3>
-<h3 id="add-range">Add Range</h3>
-<h3 id="remove">Remove</h3>
-<h3 id="sort">Sort</h3>
-<h3 id="move">Move</h3>
-<h3 id="swap">Swap</h3>
-<h3 id="reducers">Reducers</h3>
 <h2 id="gotchas">Gotchas</h2>
-<h2 id="with-pipeline">With Pipeline</h2>
-<h2 id="without-pipeline">Without Pipeline</h2>
+<h2 id="integration">Integration</h2>
+<h3 id="with-pipeline">With Pipeline</h3>
+<h3 id="without-pipeline">Without Pipeline</h3>
 <h2 id="credits">Credits</h2>
 <p>Redux Collector is free software under the MIT license. It was created in sunny Santa Monica by <a href="http://www.mediadrake.com">Matthew Drake</a>.</p>
 </div></div><!-- empty--><script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/prism.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/components/prism-javascript.min.js"></script><script>$('a[href="http://redux-collector.mediadrake.com/"]').remove();</script></body></html>

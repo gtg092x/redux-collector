@@ -79,7 +79,7 @@ function collectorReducerBase({itemDefault, matcher, addWrapper, getMoveIndexes,
 
       const result = [];
       for (let i = 0, updated = 0; i < state.length; i++) {
-        if (i >= skip && updated < limit && matcher(state[i], query, i)) {
+        if (i >= skip && updated < limit && matcher(state[i], query)) {
           result.push(reducer(state[i], rest));
           updated ++;
         } else {
@@ -104,7 +104,7 @@ function collectorReducerBase({itemDefault, matcher, addWrapper, getMoveIndexes,
 
       const result = [];
       for (let i = 0, removed = 0; i < state.length; i++) {
-        if (i < skip || removed >= limit || (query !== undefined && !matcher(state[i], query, i))) {
+        if (i < skip || removed >= limit || (query !== undefined && !matcher(state[i], query))) {
           result.push(state[i]);
         } else {
           removed ++;

@@ -185,6 +185,22 @@ export default function () {
 
     });
 
+    it ("Should support index", function () {
+
+      const state = [1, 2, 3, 4, 5];
+      let newArr = myReducer(state, {type: removeAction, index: 0});
+      assert.deepEqual([2, 3, 4, 5], newArr);
+
+    });
+
+    it ("Should support indexes", function () {
+
+      const state = [1, 2, 3, 4, 5];
+      let newArr = myReducer(state, {type: removeAction, indexes: [0, 2]});
+      assert.deepEqual([2, 4, 5], newArr);
+
+    });
+
     it ("Should support order", function () {
 
       const state = [1, 2, 3, 4, 5];
@@ -237,6 +253,7 @@ export default function () {
 
       newArr = myReducer(toSort, {type: sortAction, sort: (item) => -item.num2});
       assert.deepEqual(toSort.slice(0).reverse(), newArr);
+
     });
 
   });
@@ -321,6 +338,17 @@ export default function () {
       assert.notEqual(-3, newArr[0]);
       assert.notEqual(-3, newArr[2]);
       assert.equal(-1, newArr[1]);
+      assert.equal(3, newArr.length);
+
+      newArr = myReducer([-3, -1, -4], {...action, query: [item => Math.ceil(item) < -1, item => Math.ceil(item) >= -3]});
+      assert.notEqual(-3, newArr[0]);
+      assert.equal(-4, newArr[2]);
+      assert.equal(3, newArr.length);
+
+      newArr = myReducer([-3, -1, -4], {...action, query: {$or: [item => Math.ceil(item) < -1, item => Math.ceil(item) >= -3]}});
+      assert.notEqual(-3, newArr[0]);
+      assert.notEqual(-1, newArr[1]);
+      assert.notEqual(-4, newArr[2]);
       assert.equal(3, newArr.length);
 
     });
