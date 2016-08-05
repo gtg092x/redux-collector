@@ -55,7 +55,7 @@ function normalizeIndexArgs({indexes = [], index, ranges = [], range, queries = 
 }
 
 function normalizeAction(indexOf, state, action) {
-  const {skip, limit = state.length, index, after, range, ...rest} = action;
+  const {skip, limit = state.length, indexes, index, after, range, ...rest} = action;
   let toSkip = skip;
   let toLimit = limit;
 
@@ -69,7 +69,10 @@ function normalizeAction(indexOf, state, action) {
   } else if (after !== undefined) {
     toSkip = indexOf(state, after, skip) + 1;
   }
-  return {skip: toSkip, limit: toLimit, ...rest};
+  if (indexes !== undefined && rest.query === undefined) {
+    rest.query = (item, index) => contains(indexes, index);
+  }
+  return {skip: toSkip, indexes, limit: toLimit, ...rest};
 }
 
 function normalizeFrom(from) {

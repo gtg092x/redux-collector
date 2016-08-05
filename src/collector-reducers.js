@@ -4,7 +4,7 @@ import {contains, matcherWrap, mapIndexes, resultTransform, sortResultTransform,
 import {defaultMatcher} from './default-resolver';
 import {generateIndexesOf, generateIndexof} from './method-generators';
 
-import {normalizeSortArgs, normalizeAction as normalizeActionBase} from './normalizers';
+import {normalizeSortArgs, normalizeIndexArgs, normalizeAction as normalizeActionBase} from './normalizers';
 import {getIndexesBase, getMoveIndexesBase} from './match-methods';
 import collectorReducerBase from './collector-reducer-base';
 import {sortReducers} from './config';
@@ -51,7 +51,8 @@ function generateCollector({matcher: matcherArg, indexOf: indexOfArg, indexesOf:
     checkState(state);
     const stateArg = argTransform(state, actionArgs);
     const action = normalizeAction(stateArg, actionArgs);
-    const result = reducer.call(this, stateArg, action, ...args);
+    const indexes = normalizeIndexArgs(actionArgs);
+    const result = reducer.call(this, stateArg, {...action, ...indexes}, ...args);
     return resultTransform(result, action);
   }
 

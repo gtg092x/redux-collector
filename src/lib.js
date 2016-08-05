@@ -52,8 +52,8 @@ function sortTransform(sort, order) {
   });
 }
 
-function matcherWrap (fn, {item}, ...args) {
-  return fn.call(this, item, ...args);
+function matcherWrap (fn, {item, index}, query, ...args) {
+  return fn.call(this, item, query, index, ...args);
 }
 
 
