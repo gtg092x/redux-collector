@@ -253,6 +253,7 @@ export default function () {
 
       newArr = myReducer(toSort, {type: sortAction, sort: (item) => -item.num2});
       assert.deepEqual(toSort.slice(0).reverse(), newArr);
+
     });
 
   });

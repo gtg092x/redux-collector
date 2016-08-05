@@ -466,9 +466,136 @@ myStore.dispatch({
 
 #### Sort
 
+Sort will make an effort to use the lodash method `_.orderBy`. It will incorporate [order](#order) if it exists in your action. Otherwise, it will just do the sorting. 
+
+```js
+function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    [4, 3, 2, 1],
+    {
+      hydrate: 'HYDRATE_ITEMS',
+      sort: 'SORT_ITEMS'
+    }
+  )
+);
+
+
+myStore.dispatch({
+    type: 'SORT_ITEMS'
+});
+
+// state is [1, 2, 3, 4]
+
+myStore.dispatch({
+    type: 'HYDRATE_ITEMS',
+    [{num: 2}, {num: 3}, {num: 1}]
+});
+
+myStore.dispatch({
+    type: 'SORT_ITEMS',
+    sort: 'num'
+});
+
+// state is [{num: 1}, {num: 2}, {num: 3}]
+
+myStore.dispatch({
+    type: 'SORT_ITEMS',
+    sort: item => item.num
+});
+
+// Same as above
+
+myStore.dispatch({
+    type: 'SORT_ITEMS',
+    sort: () => Math.random()
+});
+
+// state is randomized
+
+// we'll also make an effort to infer order arguments
+
+myStore.dispatch({
+    type: 'SORT_ITEMS',
+    sort: {num: -1}
+});
+
+// state is [{num: 3}, {num: 2}, {num: 1}]
+```
+
 #### Move
 
+Move uses a `from` and a `to` argument to take an item or set of items and move them to another location in your array. 
+
+```js
+function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    [4, 3, 2, 1],
+    {      
+      move: 'MOVE_ITEMS'
+    }
+  )
+);
+
+
+myStore.dispatch({
+    type: 'MOVE_ITEMS',
+    from: 0,
+    to: -1
+});
+
+// state is [3, 2, 1, 4]
+
+myStore.dispatch({
+    type: 'MOVE_ITEMS',
+    from: [0, 1],
+    to: -2
+});
+
+// state is [2, 1, 4, 3]
+```
+
+Your `to` argument should always be a single index. Full on movement mapping is a TODO.
+
 #### Swap
+
+Swap relies on an [index argument](#indexes) to get an array of indexes. The most common use case is two indexes, but sending more than one will result in values rotating like a carousel. 
+
+```js
+function itemReducer(state, action) {
+  // reducer stuff
+}
+
+const myStore = createStore(
+  collectify(
+    [4, 3, 2, 1],
+    {      
+      swap: 'SWAP_ITEMS'
+    }
+  )
+);
+
+
+myStore.dispatch({
+    type: 'SWAP_ITEMS',
+    indexes: [0, -1]
+});
+
+// state is [1, 3, 2, 4]
+
+myStore.dispatch({
+    type: 'SWAP_ITEMS',
+    range: [0, 2]
+});
+
+// state is [2, 1, 3, 4]
 
 ### Queries
 

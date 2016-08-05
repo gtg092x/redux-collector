@@ -69,8 +69,9 @@ function normalizeAction(indexOf, state, action) {
   } else if (after !== undefined) {
     toSkip = indexOf(state, after, skip) + 1;
   }
-  if (indexes !== undefined && rest.query === undefined) {
-    rest.query = (item, index) => contains(indexes, index);
+  if (indexes !== undefined) {
+    const query = rest.query === undefined ? [] : [rest.query];
+    rest.query = [...query, (item, index) => contains(indexes, index)];
   }
   return {skip: toSkip, indexes, limit: toLimit, ...rest};
 }
