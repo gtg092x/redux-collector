@@ -12,19 +12,18 @@ function checkReducerArg(arg) {
 
 function configureCollectify(options = {}) {
 
-  return function collectify(...config) {
+  return function collectify({
+    itemDefault: itemDefaultArg,
+    add = '@@/COLLECTOR_ADD',
+    move = '@@/COLLECTOR_MOVE',
+    swap = '@@/COLLECTOR_SWAP',
+    addRange = '@@/COLLECTOR_ADD_RANGE',
+    remove = '@@/COLLECTOR_REMOVE',
+    hydrate = '@@/COLLECTOR_HYDRATE',
+    sort = '@@/COLLECTOR_SORT'
+  } = {}, reducerArg = [], collectionDefault = []) {
 
-    const [{
-      itemDefault: itemDefaultArg,
-      collectionDefault = [],
-      add = '@@/COLLECTOR_ADD',
-      move = '@@/COLLECTOR_MOVE',
-      swap = '@@/COLLECTOR_SWAP',
-      addRange = '@@/COLLECTOR_ADD_RANGE',
-      remove = '@@/COLLECTOR_REMOVE',
-      hydrate = '@@/COLLECTOR_HYDRATE',
-      sort = '@@/COLLECTOR_SORT'
-    } = {}, reducerArg = []] = config.reverse();
+
 
     const itemDefault = itemDefaultArg === undefined
       ? reducerArg.defaultsTo

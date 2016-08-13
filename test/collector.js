@@ -31,7 +31,7 @@ export default function () {
   
   describe('add', function () {
     const addAction = 'ADD_TEST';
-    const myReducer = collectify([], {
+    const myReducer = collectify({
       add: addAction
     });
 
@@ -71,7 +71,7 @@ export default function () {
 
   describe('hydrate', function () {
     const setAction = 'SET_TEST';
-    const myReducer = collectify([], {
+    const myReducer = collectify({
       hydrate: setAction
     });
 
@@ -86,7 +86,7 @@ export default function () {
 
   describe('addRange', function () {
     const addAction = 'ADD_RANGE_TEST';
-    const myReducer = collectify([], {
+    const myReducer = collectify({
       addRange: addAction
     });
 
@@ -143,7 +143,7 @@ export default function () {
 
   describe('remove', function () {
     const removeAction = 'REMOVE_TEST';
-    const myReducer = collectify([], {
+    const myReducer = collectify({
       remove: removeAction
     });
 
@@ -155,6 +155,23 @@ export default function () {
 
       newArr = myReducer([1, 2, 3], {type: removeAction, index: -1});
       assert.deepEqual([1, 2], newArr);
+
+    });
+
+    it ("Should support range", function () {
+
+      let newArr = myReducer([10, 11, 12, 13], {type: removeAction, range: [0, 2]});
+      assert.deepEqual([13], newArr);
+
+    });
+
+    it ("Should support after", function () {
+
+      let newArr = myReducer([10, 11, 12, 13], {type: removeAction, after: arg => arg === 11});
+      assert.deepEqual([10, 11], newArr);
+
+      newArr = myReducer([10, 11, 12, 13], {type: removeAction, after: (arg, index) => index === 1});
+      assert.deepEqual([10, 11], newArr);
 
     });
 
@@ -214,7 +231,7 @@ export default function () {
 
   describe('sort', function () {
     const sortAction = 'SORT_TEST';
-    const myReducer = collectify([], {sort: sortAction});
+    const myReducer = collectify({sort: sortAction});
 
     checkIntegrity(myReducer, {type: sortAction});
     it ("Should support order", function () {
@@ -260,7 +277,7 @@ export default function () {
 
   describe('move', function () {
     const moveAction = 'MOVE_TEST';
-    const myReducer = collectify([], {
+    const myReducer = collectify({
       move: moveAction
     });
 
@@ -273,7 +290,10 @@ export default function () {
       newArr = myReducer([3, 4, 5, 6], {type: moveAction, from: [2, 3], to: 0});
       assert.deepEqual([5, 6, 3, 4], newArr);
 
-      newArr = myReducer([3, 4, 5, 6], {type: moveAction, from: [1, 3], to: 0});
+      newArr = myReducer([3, 4, 5, 6, 7], {type: moveAction, from: [2, 4], to: 0});
+      assert.deepEqual([5, 7, 3, 4, 6], newArr);
+
+      newArr = myReducer([3, 4, 5, 6], {type: moveAction, from: {range: [1, 3]}, to: 0});
       assert.deepEqual([4, 5, 6, 3], newArr);
 
       newArr = myReducer([3, 4, 5, 6], {type: moveAction, from: [2, 3], to: 1});
@@ -281,12 +301,15 @@ export default function () {
 
       newArr = myReducer([3, 4, 5, 6], {type: moveAction, from: item => item > 4, to: 0});
       assert.deepEqual([5, 6, 3, 4], newArr);
+
+      newArr = myReducer([3, 4, 5, 6], {type: moveAction, from: item => item > 5, to: item => item === 4});
+      assert.deepEqual([3, 6, 4, 5], newArr);
     });
   });
 
   describe('swap', function () {
     const swapAction = 'SWAP_TEST';
-    const myReducer = collectify([], {
+    const myReducer = collectify({
       swap: swapAction
     });
 
@@ -302,10 +325,10 @@ export default function () {
   });
 
   describe('item reduce', function () {
-    const myReducer = collectify({
+    const myReducer = collectify({}, {
       defaultsTo: [],
       "RANDOMIZE": () => randomInt()
-    }, {});
+    });
 
     const action = {type: 'RANDOMIZE'};
 
@@ -377,7 +400,7 @@ export default function () {
 
     it("Should handle injection", function() {
 
-      const myColReducer = collectify([], {
+      const myColReducer = collectify({
         add: "ADD_ITEM"
       });
 
@@ -405,12 +428,11 @@ export default function () {
       }
 
       const myColReducer = configureCollectify({matcher})({
+        add: "ADD_ITEM"
+      }, {
         "INCREMENT": state => state + 1,
         defaultsTo: 0
-      }, {
-        collectionDefault: [2],
-        add: "ADD_ITEM"
-      });
+      }, [2]);
 
       
 

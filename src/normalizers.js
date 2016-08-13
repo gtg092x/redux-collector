@@ -64,7 +64,7 @@ function normalizeAction(indexOf, state, action) {
     toSkip = clamp(state.length, index);
   } else if (range !== undefined) {
     const [start, end] = range.map(clamp.bind(undefined, state.length));
-    toLimit = end - start;
+    toLimit = (end + 1) - start;
     toSkip = start;
   } else if (after !== undefined) {
     toSkip = indexOf(state, after, skip) + 1;
@@ -80,16 +80,23 @@ function normalizeFrom(from) {
   return _.isNumber(from)
     ? {index: from}
     : _.isArray(from)
-    ? from.length === 2 ? {range: from} : {indexes: from}
-    : _.isFunction(from) ? {query: from} : from;
+      ? {indexes: from}
+      : _.isFunction(from)
+        ? {query: from}
+        : from;
 }
 
 function normalizeTo(to) {
+
+  if (_.isArray(to)) {
+    throw '[Redux Collector] `to` must be a single index. You passed: ' + to;
+  }
+
   return _.isNumber(to)
     ? {index: to}
-    : _.isArray(to)
-    ? {range: to}
-    : to;
+    : _.isFunction(to)
+      ? {query: to}
+      : to;
 }
 
 

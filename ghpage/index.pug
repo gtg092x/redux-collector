@@ -6,15 +6,16 @@ block title
 block nav
     a.nav-link(href='#installation') Install
     a.nav-link(href='#usage') Usage
-    a.nav-link(href='#reducify') Reducify
+    a.nav-link(href='#with-reducify') Reducify
     a.nav-link(href='#features') Features
-    a.nav-link(href='#customization') Customization
-    a.nav-link(href='#gotchas') Gotchas
+    a.nav-link(href='#actions') Actions
+    a.nav-link(href='#operations') Operations
     a.nav-link(href='#integration') Integration
-    a.nav-link(href='#cedits') Credits
+    a.nav-link(href='#gotchas') Gotchas
+    a.nav-link(href='#credits') Credits
 
 block github
-    a.nav-link.github(href='https://github.com/gtg092x/reducify',target="_blank")
+    a.nav-link.github(href='https://github.com/gtg092x/redux-collector',target="_blank")
         span.fa.fa-github
         | Github
 
@@ -44,14 +45,12 @@ block masthead
             span.text Stupid Simple Redux Collections
             pre
                 code.language-js.
-                    // [6, 4, 3, 2, 1]
+                    // [1, 2, 3, 4, 5]
                     dispatch({
                         type: "INCREMENT",
-                        query: item => item >= 2,
-                        skip: 1,
-                        limit: 2
+                        query: item => item !== 1
                     });
-                    // [6, 5, 4, 2, 1]
+                    // [1, 3, 4, 5, 6]
 block scripts
     script.
         $('a[href="http://redux-collector.mediadrake.com/"]').remove();

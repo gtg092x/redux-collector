@@ -17,8 +17,8 @@ export default function () {
       const tracker = _.cloneDeep(defaults);
       const myReducer = pipeline(
         defaults,
-        ['breads', collectify({'SPOIL_BREAD': spoil}, {add: 'ADD_BREAD'})],
-        ['cheeses', collectify({'SPOIL_CHEESE': spoil}, {add: 'ADD_CHEESE'})],
+        ['breads', collectify({add: 'ADD_BREAD'}, {'SPOIL_BREAD': spoil})],
+        ['cheeses', collectify({add: 'ADD_CHEESE'}, {'SPOIL_CHEESE': spoil})],
         {
           $: 'lunch',
           "END_LUNCH": () => false
@@ -54,10 +54,11 @@ export default function () {
     });
     it ("Should throw an error if you bork config", function() {
       assert.throw(function() {
+        const spoil = (state) => state + ' - gross';
         pipeline(
           defaults,
-          ['breads', collectify({$: 'fail', 'SPOIL_BREAD': spoil}, {add: 'ADD_BREAD'})],
-          ['cheeses', collectify({$: 'fail', 'SPOIL_CHEESE': spoil}, {add: 'ADD_CHEESE'})],
+          ['breads', collectify({add: 'ADD_BREAD'}, {$: 'fail', 'SPOIL_BREAD': spoil})],
+          ['cheeses', collectify({add: 'ADD_CHEESE'}, {$: 'fail', 'SPOIL_CHEESE': spoil})],
           {
             $: 'lunch',
             "END_LUNCH": () => false

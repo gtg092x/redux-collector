@@ -12,14 +12,12 @@
 
 ga('create', 'UA-44186754-5', 'auto');
 ga('send', 'pageview');
-</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#reducify">Reducify</a><a class="nav-link" href="#features">Features</a><a class="nav-link" href="#customization">Customization</a><a class="nav-link" href="#gotchas">Gotchas</a><a class="nav-link" href="#integration">Integration</a><a class="nav-link" href="#cedits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/reducify" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Stupid Simple Redux Collections</span><pre><code class="language-js">// [6, 4, 3, 2, 1]
+</script><div id="root"><div class="nav nav-inline navbar-light bg-faded"><nav class="container navbar-nav"><a class="nav-link" href="#installation">Install</a><a class="nav-link" href="#usage">Usage</a><a class="nav-link" href="#with-reducify">Reducify</a><a class="nav-link" href="#features">Features</a><a class="nav-link" href="#actions">Actions</a><a class="nav-link" href="#operations">Operations</a><a class="nav-link" href="#integration">Integration</a><a class="nav-link" href="#gotchas">Gotchas</a><a class="nav-link" href="#credits">Credits</a><a class="nav-link github" href="https://github.com/gtg092x/redux-collector" target="_blank"><span class="fa fa-github"></span>Github</a></nav></div><div class="masthead"><h1 class="container"><span class="mast-card"><span class="text">Stupid Simple Redux Collections</span><pre><code class="language-js">// [1, 2, 3, 4, 5]
 dispatch({
     type: "INCREMENT",
-    query: item => item >= 2,
-    skip: 1,
-    limit: 2
+    query: item => item !== 1
 });
-// [6, 5, 4, 2, 1]</code></pre></span></h1><div id="example"></div></div><div class="container" id="readme"><h1 id="redux-collector-build-status-https-travis-ci-org-gtg092x-redux-collector-svg-branch-master-https-travis-ci-org-gtg092x-redux-collector-">Redux Collector <a href="https://travis-ci.org/gtg092x/redux-collector"><img src="https://travis-ci.org/gtg092x/redux-collector.svg?branch=master" alt="Build Status"></a></h1>
+// [1, 3, 4, 5, 6]</code></pre></span></h1><div id="example"></div></div><div class="container" id="readme"><h1 id="redux-collector-build-status-https-travis-ci-org-gtg092x-redux-collector-svg-branch-master-https-travis-ci-org-gtg092x-redux-collector-">Redux Collector <a href="https://travis-ci.org/gtg092x/redux-collector"><img src="https://travis-ci.org/gtg092x/redux-collector.svg?branch=master" alt="Build Status"></a></h1>
 <p>Easy Collection Reducers for <a href="https://github.com/reactjs/redux">Redux</a>.</p>
 <p><a href="https://nodei.co/npm/redux-collector/"><img src="https://nodei.co/npm/redux-collector.png?downloads=true&amp;stars=true" alt="NPM"></a></p>
 <p><a href="http://redux-collector.mediadrake.com/">http://redux-collector.mediadrake.com/</a></p>
@@ -43,13 +41,13 @@ function counterReducer(state = 0, action) {
 }
 
 export default createStore(
-  collectify(
-    counterReducer, 
+  collectify(     
     {
       add: &#39;ADD_ITEM&#39;,
       hydrate: &#39;HYDRATE_ITEMS&#39;,
       remove: &#39;REMOVE_ITEM&#39;
-    }
+    },
+    counterReducer
   )
 );
 </code></pre>
@@ -107,14 +105,14 @@ import collectify from &#39;redux-collector&#39;;
 export default createStore(
   collectify(
     {
-      defaultsTo: 0,
-      &quot;INCREMENT&quot;: state =&gt; state + 1,
-      &quot;DECRAMENT&quot;: state =&gt; state - 1
-    },
-    {
       add: &#39;ADD_ITEM&#39;,
       hydrate: &#39;HYDRATE_ITEMS&#39;,
       remove: &#39;REMOVE_ITEM&#39;
+    },
+    {
+      defaultsTo: 0,
+      &quot;INCREMENT&quot;: state =&gt; state + 1,
+      &quot;DECRAMENT&quot;: state =&gt; state - 1
     }
   )
 );
@@ -123,7 +121,7 @@ export default createStore(
 <h2 id="features">Features</h2>
 <p>Basically, you&#39;ll get a reducer that does everything you need to arrays. When you call <code>collectify</code> you&#39;ll get a chance to declare action types for any of the following methods.</p>
 <h3 id="collectify">Collectify</h3>
-<pre><code class="lang-js">collectify([[itemReducer&lt;Object|Function&gt;], actionTypes&lt;Object&gt;]);
+<pre><code class="lang-js">collectify([actionTypes&lt;Object&gt;, [itemReducer&lt;Object|Function&gt;, collectionDefault&lt;Array&gt;]]);
 </code></pre>
 <p>One primary function, wrap your item reducers with this.</p>
 <p><code>itemReducer</code></p>
@@ -144,7 +142,7 @@ const actionTypes = {
   sort = &#39;SORT_MY_ITEMS&#39;
 };
 
-const myReducer = collectify(itemReducer, actionTypes);
+const myReducer = collectify(actionTypes, itemReducer);
 </code></pre>
 <p>If you pass only one argument, we assume the reducer is a static reducer for an empty array and will treat the one argument as the <code>actionTypes</code> argument. See <a href="http://reducify.mediadrake.com/#statics">Reducify static reducers</a>.</p>
 <h3 id="reducers">Reducers</h3>
@@ -160,7 +158,7 @@ const myReducer = collectify(itemReducer, actionTypes);
 }
 
 
-const myStore = createStore(collectify(itemReducer, {hydrate: &#39;SET_ITEMS&#39;}));
+const myStore = createStore(collectify({hydrate: &#39;SET_ITEMS&#39;}, itemReducer));
 
 myStore.dispatch({
     type: &#39;SET_ITEMS&#39;,
@@ -178,13 +176,13 @@ myStore.dispatch({
 <p>Notice the action &#39;INCREMENT_BY_TWO&#39; was applied to every item in the array.</p>
 <h3 id="config">Config</h3>
 <p>There are two configuration options you can pass in with your action types.</p>
-<h4 id="collectiondefault">collectionDefault</h4>
+<h4 id="collection-default">Collection Default</h4>
 <p>This is the default or initial value of the collection.</p>
 <pre><code class="lang-js">function itemReducer(state, action) {
   // reducer stuff
 }
 
-const myStore = createStore(collectify(itemReducer, {collectionDefault: [1, 2]}));
+const myStore = createStore(collectify({}, itemReducer, [1, 2]));
 
 myStore.dispatch({
     type: &#39;PASS&#39;
@@ -198,7 +196,7 @@ myStore.dispatch({
   // reducer stuff
 }
 
-const myStore = createStore(collectify(itemReducer, {itemDefault: 10, add: &#39;ADD_ITEM&#39;}));
+const myStore = createStore(collectify({itemDefault: 10, add: &#39;ADD_ITEM&#39;}, itemReducer));
 
 myStore.dispatch({
     type: &#39;ADD_ITEM&#39;
@@ -215,17 +213,17 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    itemReducer,
+  collectify(    
     {      
       hydrate: &#39;HYDRATE_ITEMS&#39;     
-    }
+    },
+    itemReducer
   )
 );
 
 myStore.dispatch({
     type: &#39;HYDRATE&#39;,
-    data: [1, 2, 3, 4] // data is required
+    data: [1, 2, 3, 4] // data is required for HYDRATE
 });
 </code></pre>
 <h4 id="add">Add</h4>
@@ -235,12 +233,12 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    itemReducer,
+  collectify(    
     {      
       itemDefault: 10,
       add: &#39;ADD_ITEM&#39;     
-    }
+    },
+    itemReducer
   )
 );
 
@@ -263,9 +261,9 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    itemReducer,
-    { add: &#39;ADD_ITEM&#39; }
+  collectify(    
+    { add: &#39;ADD_ITEM&#39; },
+    itemReducer
   )
 );
 
@@ -292,12 +290,12 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    itemReducer,
+  collectify(    
     {      
       itemDefault: 10,
       addRange: &#39;ADD_MULTIPLE_ITEMS&#39;     
-    }
+    },
+    itemReducer
   )
 );
 
@@ -320,9 +318,9 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    itemReducer,
-    { addRange: &#39;ADD_MULTIPLE_ITEMS&#39; }
+  collectify(    
+    { addRange: &#39;ADD_MULTIPLE_ITEMS&#39; },
+    itemReducer
   )
 );
 
@@ -345,12 +343,12 @@ myStore.dispatch({
 <h4 id="remove">Remove</h4>
 <p>This will remove items from your collection. If you do not pass a <a href="#queries">query</a>, it will clear the entire collection.</p>
 <pre><code class="lang-js">const myStore = createStore(
-  collectify(
-    [1, 2, 3, 4], // this is a static reducify reducer - defaulting to this array
+  collectify(    
     {
       hydrate: &#39;HYDRATE_ITEMS&#39;,
       remove: &#39;REMOVE_ITEMS&#39;
-    }
+    },
+    [1, 2, 3, 4] // passing in an object and not a function will make this the default value
   )
 );
 
@@ -415,12 +413,12 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    [4, 3, 2, 1],
+  collectify(    
     {
       hydrate: &#39;HYDRATE_ITEMS&#39;,
       sort: &#39;SORT_ITEMS&#39;
-    }
+    },
+    [4, 3, 2, 1]
   )
 );
 
@@ -473,11 +471,11 @@ myStore.dispatch({
 }
 
 const myStore = createStore(
-  collectify(
-    [4, 3, 2, 1],
+  collectify(    
     {      
       move: &#39;MOVE_ITEMS&#39;
-    }
+    },
+    [4, 3, 2, 1]
   )
 );
 
@@ -501,41 +499,542 @@ myStore.dispatch({
 <p>Your <code>to</code> argument should always be a single index. Full on movement mapping is a TODO.</p>
 <h4 id="swap">Swap</h4>
 <p>Swap relies on an <a href="#indexes">index argument</a> to get an array of indexes. The most common use case is two indexes, but sending more than one will result in values rotating like a carousel. </p>
-<p>```js
-function itemReducer(state, action) {
+<pre><code class="lang-js">function itemReducer(state, action) {
   // reducer stuff
-}</p>
-<p>const myStore = createStore(
-  collectify(
-    [4, 3, 2, 1],
-    {<br>      swap: &#39;SWAP_ITEMS&#39;
-    }
+}
+
+const myStore = createStore(
+  collectify(    
+    {      
+      swap: &#39;SWAP_ITEMS&#39;
+    },
+    [4, 3, 2, 1]
   )
-);</p>
-<p>myStore.dispatch({
+);
+
+
+myStore.dispatch({
     type: &#39;SWAP_ITEMS&#39;,
     indexes: [0, -1]
-});</p>
-<p>// state is [1, 3, 2, 4]</p>
-<p>myStore.dispatch({
+});
+
+// state is [1, 3, 2, 4]
+
+myStore.dispatch({
     type: &#39;SWAP_ITEMS&#39;,
     range: [0, 2]
-});</p>
-<p>// state is [2, 1, 3, 4]</p>
-<h3 id="queries">Queries</h3>
+});
+
+// state is [2, 1, 3, 4]
+
+### Queries
+
+Because we may not always want to change the entire collection, Redux Collector looks for the keyword `query` in your action that you dispatch. This query is processed by the collector matching method.
+
+```js
+function increment(state = 0, action) {
+    switch(action.type) {
+        case &#39;INCREMENT&#39;:
+            return state + 1;
+        default:
+            return state;
+    }
+}
+
+const myStore = createStore(
+  collectify(    
+    {
+        hydrate: &#39;HYDRATE_LIST&#39; 
+    },
+    increment
+  )
+);
+
+myStore.dispatch({
+    type: &#39;HYDRATE_LIST&#39;,
+    data: [-1, 2, 4]
+});
+
+// state is [-1, 2, 4]
+
+myStore.dispatch({
+    type: &#39;INCREMENT&#39;,
+    query: function(item) {
+        return item &gt; 0;
+    }
+});
+
+// all items are incremented by 1
+// state is [-1, 3, 5]
+</code></pre>
+<h4 id="matcher">Matcher</h4>
+<p>By default, the matcher used by <code>query</code> and <code>after</code> inspects your query argument and compares it against every item in the collection. </p>
+<p>By default, your query is processed as follows:</p>
+<h5 id="undefined">Undefined</h5>
+<p>If undefined, we assume you want your operation applied to all items in the list.</p>
+<h5 id="function">Function</h5>
+<p>If a function, we evaluate this function passing in <code>[state, index]</code>. Returning <code>true</code> will say that query matches the item. Returning <code>false</code> will say it doesn&#39;t.</p>
+<h5 id="array">Array</h5>
+<p>If you pass an array, we will process every item in the query with against <code>every</code> (as an <strong>and</strong>, not <strong>or</strong>). For or, use <a href="#or">$or</a>. This is recursive.</p>
+<h5 id="or">Or</h5>
+<p>If you pass an object with the key <code>$or</code>, it must have a child that is an array and we will process this against <code>some</code>. This is recursive.</p>
+<pre><code class="lang-js">myStore.dispatch({
+    type: &#39;INCREMENT&#39;,
+    query: [
+        item =&gt; item &gt; 0, 
+        item =&gt; item % 2 === 0
+    ] // all items that are greater than 0 and are even
+});
+
+myStore.dispatch({
+    type: &#39;INCREMENT&#39;,
+    query: {
+        $or: [
+            item =&gt; item &gt; 0, 
+            item =&gt; item % 2 === 0
+        ]
+    } // all items that are greater than 0 or are even
+});
+
+myStore.dispatch({
+    type: &#39;INCREMENT&#39;,
+    query: [
+        item =&gt; item % 2 === 0
+        {
+            $or: [
+                        item =&gt; item &gt; 0, 
+                        item =&gt; item === -2
+            ]
+        }   
+    ] // all items that are even and are either greater than 0 or equal to -2
+});
+</code></pre>
+<h4 id="boolean">Boolean</h4>
+<p>If <code>true</code>, we assume you want your operation applied to all truthy items in the list.</p>
+<p>If <code>false</code>, we assume you want your operation applied to all falsy items in the list.</p>
+<h4 id="object">Object</h4>
+<p>If you pass an object, we&#39;ll pass this to the <a href="https://lodash.com/docs#isMatch">lodash function</a> <code>_.isMatch</code> with the item&#39;s state as the first argument.</p>
+<h4 id="primitive">Primitive</h4>
+<p>If you pass any number or string, we will do a strict equals comparison.</p>
+<h4 id="custom">Custom</h4>
+<p>It&#39;s possible to customize your matcher function. Use the import <code>{configureCollectify}</code> and pass in a matcher argument.</p>
+<pre><code class="lang-js">import {configureCollectify}
+
+// We pass you the default matcher so you can add functionality without losing default matching behavior
+function matcher(item, test, index, defaultMatcher) {
+    if (test === &#39;isOdd&#39;) {
+        return (item % 2) === 1;
+    }
+    return defaultMatcher(item, test, index);
+}
+
+const myCollectify = configureCollectify({matcher});
+
+const myColReducer = myCollectify(
+    {}, 
+    incrementReducer,
+    [2, 3, 4]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    query: &#39;isOdd&#39;
+})
+
+// result is [2, 4, 4]
+</code></pre>
 <h3 id="operations">Operations</h3>
-<h4 id="order">Order</h4>
-<h4 id="after">After</h4>
-<h4 id="sort">Sort</h4>
+<p>Beyond queries, there are other ways to apply your partial changes to your collection. These should be familiar to anyone with experience in mongo or other collection libraries.</p>
 <h4 id="limit">Limit</h4>
+<p>Limits the number of operations your query will execute. This applies to all reducer behavior and <code>remove</code>.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    limit: 1
+})
+// result would be [2, 2, 3]
+</code></pre>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    limit: 1
+})
+// result would be [2, 3]
+</code></pre>
+<h4 id="skip">Skip</h4>
+<p>Skips a number of items before executing your operation. This applies to all reducer behavior and <code>remove</code>.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    skip: 1
+})
+// result would be [1, 3, 4]
+</code></pre>
+<p>Skip and limit can be combined together.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    skip: 1,
+    limit: 1
+})
+// result would be [1, 3, 3]
+</code></pre>
+<h4 id="index">Index</h4>
+<p>A shortcut for <code>skip = index</code> and <code>limit = 1</code>. Indexes are pythonic, meaning that -1 is equal to the last item in the array.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    index: 1
+})
+// result would be [1, 3, 3]
+</code></pre>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    index: -1
+})
+// result would be [1, 2, 4]
+</code></pre>
+<h4 id="indexes">Indexes</h4>
+<p>The same as <code>index</code>, but should be an array of indexes. Like <code>index</code>, these values are pythonic.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [1, 2, 3]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    indexes: [0, 2]
+})
+// result would be [2]
+</code></pre>
+<h4 id="range">Range</h4>
+<p>Should be a two dimensional array of pythonic indexes of the form <code>[start, end]</code>.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [1, 2, 3, 4]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    range: [0, 2]
+})
+// result would be [4]
+</code></pre>
+<h4 id="after">After</h4>
+<p>Should be a <code>query</code> that, upon first match, will determine the <code>skip</code> and <code>limit</code>.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [1, 2, 3, 4]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    after: (arg, index) =&gt; arg === 2
+})
+// result would be [1, 2]
+</code></pre>
+<p>Keep in mind, this is only evaluated once. If the after function returns true, the rest of the collection will have operations applied to it.</p>
+<h4 id="sort">Sort</h4>
+<p>Sorts the collection before applying operations to it. This uses the same arguments available for <code>sort</code>, but does not actually sort your list. This is useful when used in conjunction with any index operators.</p>
+<pre><code class="lang-js">
+function incrementReducer(state = {value: 0}, action) {
+    switch(action.type) {
+        case &#39;INCREMENT&#39;:
+            return {...state, value: state.value + 1};
+        default:
+            return state;
+    }   
+}
+
+const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    sort: &#39;ord&#39;,
+    limit : 2
+})
+// result would be [{ord: 1, value: 4}, {ord: 3, value: 5}, {ord: 2, value: 11}]
+// notice the second element was not changed
+</code></pre>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    sort: &#39;ord&#39;,
+    limit : 1,
+    skip: 1
+})
+// result would be [{ord: 1, value: 3}, {ord: 3, value: 5}]
+</code></pre>
+<p>You can pass a function to <code>sort</code> if you need to do something more complicated than just checking against a single key. Keep in mind, that <code>order</code> can still flip your collection. If you sort by the negative result of a key, your <code>order</code> argument might undo that.</p>
+<pre><code class="lang-js">// same as above
+const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    sort: item =&gt; item.ord,
+    limit : 1,
+    skip: 1
+})
+// result would be [{ord: 1, value: 3}, {ord: 3, value: 5}]
+</code></pre>
+<h4 id="order">Order</h4>
+<p>This determines the direction your collections&#39;s sorting occurs in. If you do not sort your list, it can be used to just reverse the direction your operations are done in.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [1, 5, 2]
+);
+
+// removes the last item in the list
+dispatch({
+    type: &#39;REMOVE&#39;,
+    order: -1,
+    limit : 1
+})
+// result would be [1, 5]
+</code></pre>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    sort: &#39;ord&#39;,
+    order : -1
+})
+// result would be [{ord: 1, value: 3}, {ord: 3, value: 5}]
+</code></pre>
+<p>You can combine <code>order</code> and <code>sort</code> with a shortcut by passing an object to <code>sort</code>.</p>
+<pre><code class="lang-js">// same as above
+const myColReducer = collectify(
+    {remove: &#39;REMOVE&#39;},
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
+);
+
+dispatch({
+    type: &#39;REMOVE&#39;,
+    sort: {ord: -1}
+})
+// result would be [{ord: 1, value: 3}, {ord: 3, value: 5}]
+</code></pre>
 <h3 id="moving-and-sorting">Moving and Sorting</h3>
-<h3 id="indexes">Indexes</h3>
-<h2 id="customization">Customization</h2>
-<h3 id="matcher">Matcher</h3>
-<h2 id="gotchas">Gotchas</h2>
+<h4 id="sort-list">Sort List</h4>
+<p>Using the same arguments for <a href="#sort">sort</a>, you can modify the output of your list.</p>
+<pre><code class="lang-js">// same as above
+const myColReducer = collectify(
+    {sort: &#39;SORT&#39;},
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
+);
+
+dispatch({
+    type: &#39;SORT&#39;,
+    sort: &#39;ord&#39;
+})
+// result would be [{ord: 1, value: 3}, {ord: 2, value: 10}, {ord: 3, value: 5}]
+</code></pre>
+<h4 id="move">Move</h4>
+<p>Move lets you take a set of <code>indexes</code> passed to a <code>from</code> argument and places them at a single indexes provided by a <code>to</code> argument.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {move: &#39;MOVE&#39;, hydrate: &#39;HYDRATE&#39;},
+    [1, 2, 3, 4, 5]
+);
+
+dispatch({
+    type: &#39;MOVE&#39;,
+    from: 1,
+    to: 0
+})
+// result would be [2, 1, 3, 4, 5]
+
+dispatch({
+    type: &#39;HYDRATE&#39;,
+    data: [1, 2, 3, 4, 5]
+})
+
+dispatch({
+    type: &#39;MOVE&#39;,
+    from: [1, 3], // treated as a list of indexes
+    to: 0
+})
+// result would be [2, 4, 1, 3, 5]
+
+dispatch({
+    type: &#39;HYDRATE&#39;,
+    data: [1, 2, 3, 4, 5]
+})
+
+dispatch({
+    type: &#39;MOVE&#39;,
+    from: item =&gt; item === 3, // treated as a query
+    to: item =&gt; item === 2 // treated as a query, we will only use the first index returned
+})
+// result would be [1, 3, 2, 4, 5]
+
+dispatch({
+    type: &#39;HYDRATE&#39;,
+    data: [1, 2, 3, 4, 5]
+})
+
+dispatch({
+    type: &#39;MOVE&#39;,
+    from: {after: item =&gt; item &gt; 1},
+    to: 0
+})
+// result would be [2, 3, 4, 5, 1]
+</code></pre>
+<h4 id="swap">Swap</h4>
+<p>Swap switches item by index.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {move: &#39;SWAP&#39;},
+    [1, 2, 3, 4, 5]
+);
+
+dispatch({
+    type: &#39;SWAP&#39;,
+    indexes: [1, 4]
+})
+// result would be [1, 5, 3, 4, 2]
+</code></pre>
+<p>While most <code>swap</code> use cases should just take advantage of <code>indexes</code>, you can swap more than one item and have everything move in a carousel.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {move: &#39;SWAP&#39;},
+    [1, 2, 3, 4, 5]
+);
+
+dispatch({
+    type: &#39;SWAP&#39;,
+    after: item =&gt; item === 3
+})
+// result would be [1, 2, 5, 3, 4]
+</code></pre>
+<p>Check out <a href="#operations">operations</a> for more details.</p>
 <h2 id="integration">Integration</h2>
+<p>Not every reducer is just a single array. Sometimes your array might be a property on the reducer itself. There&#39;s two ways to solve this. </p>
 <h3 id="with-pipeline">With Pipeline</h3>
+<p>The easy way.</p>
+<p><a href="">Redux Pipeline</a> can you let select object properties to apply certain reducers to.</p>
+<p>It would look something like this:</p>
+<pre><code class="lang-js">const myState = {items: []};
+
+function itemReducer(state = 0, action) {
+    // reducer
+}
+
+const myReducer = pipeline(
+    myState,
+    {
+      $: &#39;items&#39;,
+      reducer: collectify({
+        add: &#39;ADD&#39;,
+        // etc.
+      }, itemReducer)
+    }
+);
+</code></pre>
 <h3 id="without-pipeline">Without Pipeline</h3>
+<p>The slightly more difficult, but not impossible, way.</p>
+<p>Track all actions that would apply to your collection and run them through a collectified reducer for that item. It would look like this:</p>
+<pre><code class="lang-js">const collectified = collectify({
+    add: &quot;ADD&quot;
+}, {
+    &quot;INCREMENT&quot;: state =&gt; state + 1
+});
+
+function reducer(state = {items: []}, action = {}) {
+    switch(action.type) {
+        case &#39;ADD&#39;:        
+        case &#39;INCREMENT&#39;:
+            return {...state, items: collectified(state.items, action)};
+        default:
+            return state;
+    }
+}
+
+const store = createStore(reducer);
+
+
+const {dispatch, getState} = store;
+dispatch({type: &#39;ADD&#39;, data: 10});
+
+// state is {items: [10]}
+
+dispatch({type: &#39;INCREMENT&#39;});
+// state is {items: [11]}
+</code></pre>
+<h2 id="gotchas">Gotchas</h2>
+<h3 id="multiple-aliases">Multiple Aliases</h3>
+<p>A lot of operations will override behavior of other operations. Mixing them together can lead to odd consequences. We try our best to merge them all, but, when in doubt, either use specific indexes or stick to <code>skip</code> and <code>limit</code>.</p>
+<pre><code class="lang-js">const myColReducer = collectify(
+    {}, 
+    incrementReducer,
+    [1, 2, 3, 4]
+);
+
+dispatch({
+    type: &#39;INCREMENT&#39;,
+    skip: 1,
+    index: 0,
+    limit 2
+})
+// result would be [1, 3, 4]
+// index just gets ignored
+</code></pre>
+<h3 id="selectors-without-pipeline">Selectors without pipeline</h3>
+<p>Redux Collector uses <a href="">Reducify</a> for your reducer config. This means you can pass any reducer function or a configuration. However, Redux Collector only works on collections, so trying to select something with your configuration will throw an error.</p>
+<pre><code class="lang-js">const myState = {items: []};
+
+const myReducer = collectify(
+    {},
+    {
+      $: &#39;items&#39;,
+      &quot;INCREMENT&quot;: state =&gt; state + 1
+    },
+    myState
+);
+// throws an error, use pipeline instead
+</code></pre>
+<p>If you find yourself selecting something within <code>collectify</code>, refer to the <a href="#with-pipeline">With Pipeline</a> section of this readme.</p>
 <h2 id="credits">Credits</h2>
 <p>Redux Collector is free software under the MIT license. It was created in sunny Santa Monica by <a href="http://www.mediadrake.com">Matthew Drake</a>.</p>
 </div></div><!-- empty--><script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/prism.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/components/prism-javascript.min.js"></script><script>$('a[href="http://redux-collector.mediadrake.com/"]').remove();</script></body></html>
