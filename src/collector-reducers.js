@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import {contains, matcherWrap, mapIndexes, resultTransform, sortResultTransform, addWrapper, sortTransform} from './lib';
 
-import {defaultMatcher} from './default-resolver';
+import {defaultMatcher} from './default-matcher';
 import {generateIndexesOf, generateIndexof} from './method-generators';
 
 import {normalizeSortArgs, normalizeIndexArgs, normalizeAction as normalizeActionBase} from './normalizers';

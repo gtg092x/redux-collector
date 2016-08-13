@@ -8,7 +8,7 @@ function defaultMatcher(arg, predicate, index) {
   } else if (_.isFunction(predicate)) {
     return predicate(arg, index);
   } else if(_.isBoolean(predicate)) {
-    return predicate;
+    return predicate === true ? !!arg : !arg;
   } else if(!_.isPlainObject(predicate)) {
     return predicate === arg;
   } else if(predicate.$or) {
