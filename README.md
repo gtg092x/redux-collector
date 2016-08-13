@@ -1,3 +1,8 @@
+[Redux]: https://github.com/reactjs/redux
+[Matthew Drake]: http://www.mediadrake.com
+[Reducify]: http://reducify.mediadrake.com
+[Redux Pipeline]: http://redux-pipeline.mediadrake.com
+
 # Redux Collector [![Build Status](https://travis-ci.org/gtg092x/redux-collector.svg?branch=master)](https://travis-ci.org/gtg092x/redux-collector)
 
 Easy Collection Reducers for [Redux][].
@@ -1225,8 +1230,3 @@ If you find yourself selecting something within `collectify`, refer to the [With
 ## Credits
 
 Redux Collector is free software under the MIT license. It was created in sunny Santa Monica by [Matthew Drake][].
-
-[Redux]: https://github.com/reactjs/redux
-[Matthew Drake]: http://www.mediadrake.com
-[Reducify]: http://reducify.mediadrake.com
-[Redux Pipeline]: http://redux-pipeline.mediadrake.com
