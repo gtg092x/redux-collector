@@ -469,138 +469,113 @@ myStore.dispatch({
 // state is [3]
 ```
 
-#### Sort
+### Moving and Sorting
 
-Sort will make an effort to use the lodash method `_.orderBy`. It will incorporate [order](#order) if it exists in your action. Otherwise, it will just do the sorting. 
+#### Sort List
+
+Using the same arguments for [sort](#sort), you can modify the output of your list.
 
 ```js
-function itemReducer(state, action) {
-  // reducer stuff
-}
-
-const myStore = createStore(
-  collectify(    
-    {
-      hydrate: 'HYDRATE_ITEMS',
-      sort: 'SORT_ITEMS'
-    },
-    [4, 3, 2, 1]
-  )
+// same as above
+const myColReducer = collectify(
+    {sort: 'SORT'},
+    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
 );
 
-
-myStore.dispatch({
-    type: 'SORT_ITEMS'
-});
-
-// state is [1, 2, 3, 4]
-
-myStore.dispatch({
-    type: 'HYDRATE_ITEMS',
-    [{num: 2}, {num: 3}, {num: 1}]
-});
-
-myStore.dispatch({
-    type: 'SORT_ITEMS',
-    sort: 'num'
-});
-
-// state is [{num: 1}, {num: 2}, {num: 3}]
-
-myStore.dispatch({
-    type: 'SORT_ITEMS',
-    sort: item => item.num
-});
-
-// Same as above
-
-myStore.dispatch({
-    type: 'SORT_ITEMS',
-    sort: () => Math.random()
-});
-
-// state is randomized
-
-// we'll also make an effort to infer order arguments
-
-myStore.dispatch({
-    type: 'SORT_ITEMS',
-    sort: {num: -1}
-});
-
-// state is [{num: 3}, {num: 2}, {num: 1}]
+dispatch({
+    type: 'SORT',
+    sort: 'ord'
+})
+// result would be [{ord: 1, value: 3}, {ord: 2, value: 10}, {ord: 3, value: 5}]
 ```
 
 #### Move
 
-Move uses a `from` and a `to` argument to take an item or set of items and move them to another location in your array. 
+Move lets you take a set of `indexes` passed to a `from` argument and places them at a single indexes provided by a `to` argument.
 
 ```js
-function itemReducer(state, action) {
-  // reducer stuff
-}
-
-const myStore = createStore(
-  collectify(    
-    {      
-      move: 'MOVE_ITEMS'
-    },
-    [4, 3, 2, 1]
-  )
+const myColReducer = collectify(
+    {move: 'MOVE', hydrate: 'HYDRATE'},
+    [1, 2, 3, 4, 5]
 );
 
+dispatch({
+    type: 'MOVE',
+    from: 1,
+    to: 0
+})
+// result would be [2, 1, 3, 4, 5]
 
-myStore.dispatch({
-    type: 'MOVE_ITEMS',
-    from: 0,
-    to: -1
-});
+dispatch({
+    type: 'HYDRATE',
+    data: [1, 2, 3, 4, 5]
+})
 
-// state is [3, 2, 1, 4]
+dispatch({
+    type: 'MOVE',
+    from: [1, 3], // treated as a list of indexes
+    to: 0
+})
+// result would be [2, 4, 1, 3, 5]
 
-myStore.dispatch({
-    type: 'MOVE_ITEMS',
-    from: [0, 1],
-    to: -2
-});
+dispatch({
+    type: 'HYDRATE',
+    data: [1, 2, 3, 4, 5]
+})
 
-// state is [2, 1, 4, 3]
+dispatch({
+    type: 'MOVE',
+    from: item => item === 3, // treated as a query
+    to: item => item === 2 // treated as a query, we will only use the first index returned
+})
+// result would be [1, 3, 2, 4, 5]
+
+dispatch({
+    type: 'HYDRATE',
+    data: [1, 2, 3, 4, 5]
+})
+
+dispatch({
+    type: 'MOVE',
+    from: {after: item => item > 1},
+    to: 0
+})
+// result would be [2, 3, 4, 5, 1]
 ```
-
-Your `to` argument should always be a single index. Full on movement mapping is a TODO.
 
 #### Swap
 
-Swap relies on an [index argument](#indexes) to get an array of indexes. The most common use case is two indexes, but sending more than one will result in values rotating like a carousel. 
+Swap switches item by index.
 
 ```js
-function itemReducer(state, action) {
-  // reducer stuff
-}
-
-const myStore = createStore(
-  collectify(    
-    {      
-      swap: 'SWAP_ITEMS'
-    },
-    [4, 3, 2, 1]
-  )
+const myColReducer = collectify(
+    {move: 'SWAP'},
+    [1, 2, 3, 4, 5]
 );
 
+dispatch({
+    type: 'SWAP',
+    indexes: [1, 4]
+})
+// result would be [1, 5, 3, 4, 2]
+```
 
-myStore.dispatch({
-    type: 'SWAP_ITEMS',
-    indexes: [0, -1]
-});
+While most `swap` use cases should just take advantage of `indexes`, you can swap more than one item and have everything move in a carousel.
 
-// state is [1, 3, 2, 4]
+```js
+const myColReducer = collectify(
+    {move: 'SWAP'},
+    [1, 2, 3, 4, 5]
+);
 
-myStore.dispatch({
-    type: 'SWAP_ITEMS',
-    range: [0, 2]
-});
+dispatch({
+    type: 'SWAP',
+    after: item => item === 3
+})
+// result would be [1, 2, 5, 3, 4]
+```
 
-// state is [2, 1, 3, 4]
+Check out [operations](#operations) for more details.
 
 ### Queries
 
@@ -1009,114 +984,6 @@ dispatch({
 })
 // result would be [{ord: 1, value: 3}, {ord: 3, value: 5}]
 ```
-
-### Moving and Sorting
-
-#### Sort List
-
-Using the same arguments for [sort](#sort), you can modify the output of your list.
-
-```js
-// same as above
-const myColReducer = collectify(
-    {sort: 'SORT'},
-    [{ord: 1, value: 3}, {ord: 3, value: 5}, {ord: 2, value: 10}]
-);
-
-dispatch({
-    type: 'SORT',
-    sort: 'ord'
-})
-// result would be [{ord: 1, value: 3}, {ord: 2, value: 10}, {ord: 3, value: 5}]
-```
-
-#### Move
-
-Move lets you take a set of `indexes` passed to a `from` argument and places them at a single indexes provided by a `to` argument.
-
-```js
-const myColReducer = collectify(
-    {move: 'MOVE', hydrate: 'HYDRATE'},
-    [1, 2, 3, 4, 5]
-);
-
-dispatch({
-    type: 'MOVE',
-    from: 1,
-    to: 0
-})
-// result would be [2, 1, 3, 4, 5]
-
-dispatch({
-    type: 'HYDRATE',
-    data: [1, 2, 3, 4, 5]
-})
-
-dispatch({
-    type: 'MOVE',
-    from: [1, 3], // treated as a list of indexes
-    to: 0
-})
-// result would be [2, 4, 1, 3, 5]
-
-dispatch({
-    type: 'HYDRATE',
-    data: [1, 2, 3, 4, 5]
-})
-
-dispatch({
-    type: 'MOVE',
-    from: item => item === 3, // treated as a query
-    to: item => item === 2 // treated as a query, we will only use the first index returned
-})
-// result would be [1, 3, 2, 4, 5]
-
-dispatch({
-    type: 'HYDRATE',
-    data: [1, 2, 3, 4, 5]
-})
-
-dispatch({
-    type: 'MOVE',
-    from: {after: item => item > 1},
-    to: 0
-})
-// result would be [2, 3, 4, 5, 1]
-```
-
-#### Swap
-
-Swap switches item by index.
-
-```js
-const myColReducer = collectify(
-    {move: 'SWAP'},
-    [1, 2, 3, 4, 5]
-);
-
-dispatch({
-    type: 'SWAP',
-    indexes: [1, 4]
-})
-// result would be [1, 5, 3, 4, 2]
-```
-
-While most `swap` use cases should just take advantage of `indexes`, you can swap more than one item and have everything move in a carousel.
-
-```js
-const myColReducer = collectify(
-    {move: 'SWAP'},
-    [1, 2, 3, 4, 5]
-);
-
-dispatch({
-    type: 'SWAP',
-    after: item => item === 3
-})
-// result would be [1, 2, 5, 3, 4]
-```
-
-Check out [operations](#operations) for more details.
 
 ## Integration
 
